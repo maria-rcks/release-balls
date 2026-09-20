@@ -1,0 +1,92 @@
+{
+  "workload": "720p/30fps/6s, real latest 5 nightlies, 6 authors; avatar network excluded",
+  "runs": 3,
+  "results": [
+    {
+      "strategy": "cached",
+      "preset": "ultrafast",
+      "seconds": [
+        0.16555411799998865,
+        0.14686205600000335,
+        0.17117311499998777
+      ],
+      "median_seconds": 0.16555411799998865,
+      "bytes": 61490
+    },
+    {
+      "strategy": "cached",
+      "preset": "superfast",
+      "seconds": [
+        0.22157084699998109,
+        0.21541035499998884,
+        0.2027484220000133
+      ],
+      "median_seconds": 0.21541035499998884,
+      "bytes": 46711
+    },
+    {
+      "strategy": "cached",
+      "preset": "veryfast",
+      "seconds": [
+        0.22601135899998326,
+        0.2292409050000117,
+        0.21700466900000492
+      ],
+      "median_seconds": 0.22601135899998326,
+      "bytes": 38069
+    },
+    {
+      "strategy": "dirty",
+      "preset": "ultrafast",
+      "seconds": [
+        0.17792751800001838,
+        0.14184363299997926,
+        0.1463700660000029
+      ],
+      "median_seconds": 0.1463700660000029,
+      "bytes": 61490
+    },
+    {
+      "strategy": "dirty",
+      "preset": "superfast",
+      "seconds": [
+        0.20253049400000123,
+        0.20177128299999936,
+        0.1979550300000028
+      ],
+      "median_seconds": 0.20177128299999936,
+      "bytes": 46711
+    },
+    {
+      "strategy": "dirty",
+      "preset": "veryfast",
+      "seconds": [
+        0.22572570399998426,
+        0.21716253499999993,
+        0.22357873400000017
+      ],
+      "median_seconds": 0.22357873400000017,
+      "bytes": 38069
+    },
+    {
+      "reference": "supplied script, 1080p/30fps/3s, real top 3, warm avatars, medium/crf17",
+      "seconds": [
+        3.45496690600001,
+        3.4254200519999927,
+        3.474161983000016
+      ],
+      "median_seconds": 3.45496690600001,
+      "bytes": 69550
+    },
+    {
+      "reference": "prototype matched 1080p/30fps/3s, same top 3; different layout, ultrafast/crf23",
+      "seconds": [
+        0.17740300199997705,
+        0.1680694410000001,
+        0.2018984370000112
+      ],
+      "median_seconds": 0.17740300199997705,
+      "bytes": 66167
+    }
+  ]
+}

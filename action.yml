@@ -25,7 +25,13 @@ inputs:
   output:
     description: Output directory
     default: release-balls-output
+  asset-base-url:
+    description: Optional public asset directory URL for release-note embeds
+    default: ''
 outputs:
+  markdown:
+    description: Markdown file with GIF embeds and video links
+    value: ${{ steps.render.outputs.markdown }}
   directory:
     description: Absolute directory containing generated media and JSON
     value: ${{ steps.render.outputs.directory }}
@@ -58,8 +64,9 @@ runs:
         RB_METRIC: ${{ inputs.metric }}
         RB_USERS: ${{ inputs.users }}
         RB_FORMAT: ${{ inputs.format }}
+        RB_ASSET_BASE: ${{ inputs.asset-base-url }}
         RB_OUTPUT: ${{ inputs.output }}
       run: |
         uv run --project "$GITHUB_ACTION_PATH" --frozen release-balls \
           --repo "$RB_REPOSITORY" --releases "$RB_RELEASES" --match "$RB_MATCH" \
-          --metric "$RB_METRIC" --users "$RB_USERS" --format "$RB_FORMAT" --out "$RB_OUTPUT"
+          --metric "$RB_METRIC" --users "$RB_USERS" --format "$RB_FORMAT" --out "$RB_OUTPUT" --asset-base-url "$RB_ASSET_BASE"
