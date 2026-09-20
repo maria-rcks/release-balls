@@ -26,7 +26,7 @@ data = json.loads(Path("demo/data.json").read_text())
 rows = ranking(data["releases"], "author")
 # Warm avatars independently; network excluded from render timings.
 for login, _ in rows:
-    avatar(login, Path(".cache/avatars"))
+    avatar(login, Path(".cache/avatars-512"))
 results = []
 for strategy in ("cached", "dirty"):
     for preset in ("ultrafast", "superfast", "veryfast"):
@@ -35,11 +35,14 @@ for strategy in ("cached", "dirty"):
             start = time.perf_counter()
             render(
                 data["repo"],
-                "latest 5 nightlies / 19 listed PRs",
+                "the last 5 releases",
                 rows,
                 "author",
                 args.out / "candidate",
                 ["mp4"],
+                width=720,
+                fps=30,
+                duration=6,
                 preset=preset,
                 strategy=strategy,
             )
@@ -72,7 +75,7 @@ if args.reference:
 
         for p in ref.PEOPLE:
             p["ball"] = ImageOps.fit(
-                avatar(p["login"], Path(".cache/avatars")), mask.size
+                avatar(p["login"], Path(".cache/avatars-512")), mask.size
             )
         return mask
 
@@ -95,7 +98,7 @@ if args.reference:
         start = time.perf_counter()
         render(
             data["repo"],
-            "latest 5 nightlies / 19 listed PRs",
+            "the last 5 releases",
             rows[:3],
             "author",
             args.out / "matched",

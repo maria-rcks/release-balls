@@ -11,7 +11,7 @@ uv run release-balls --help
 
 Install FFmpeg with your package manager. Python 3.11+; `uv sync --frozen` installs the pinned dependency. Any CI that has Python and FFmpeg can run the CLI. Authentication uses `GH_TOKEN`, `GITHUB_TOKEN`, or an existing `gh` login. Tokens never go to avatar URLs.
 
-`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. Avatar speed is proportional to count within each video, normalized so its leader is readable; speeds are not comparable across separate videos.
+`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition matches the supplied script: white background, centered title, large avatars, black name/count labels, 1080px, 60fps, and 16 seconds. Avatars follow its original bounce formula: count × 7.2 pixels per second at 1080px. Long logins shrink to fit the original label column.
 
 The prototype counts **merged PR URLs explicitly linked in release notes**, not every commit between tags. It scans all release pages and sorts by publication time, excluding drafts and tags that don't match. It rejects unsupported notes instead of silently counting zero. Custom providers can supply the same `data.json` schema. Live collection currently supports GitHub.com only.
 
@@ -61,29 +61,27 @@ Snapshot fetched September 20, 2026. Latest five published nightly releases:
 
 19 unique PRs. Author leaders: cestercian 5, juliusmarminge 4, Bil0000 3. Merge actors: juliusmarminge 11, shivamhwp 5, maria-rcks 3. Full source, PR URLs, dates, and identities are in [demo/data.json](demo/data.json).
 
-![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/45ef1b9b-36ea-4121-9b9a-d81455978cd0/five-nightlies.mp4)
+![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/b948467f-6370-4e45-8e63-302a3dad1042/five-nightlies.mp4)
 
-![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/91d15eb0-6f49-4abe-8a69-d8ffb48dbce7/summary-author.gif)
+![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/a3f791a8-40de-4eb5-86cd-a742ba946eaf/summary-author.gif)
 
-![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/ff9cc65a-55e7-4003-ae9a-eeb794534b83/summary-merger.gif)
+![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/8aca6708-f4cf-4808-adae-9bcaefefbd3e/summary-merger.gif)
 
 ## Benchmarks
 
-Three repetitions per variant. Rendering on a dedicated Blacksmith 4-vCPU Ubuntu worker, Python 3.12, Pillow 12.3, FFmpeg 6.1. Warm avatars, real snapshot, six contributors, six-second 720×720 / 30fps MP4. Wall time includes artwork and FFmpeg startup/encoding; excludes installation, API collection, and avatar downloads. [Raw rendering results](demo/render-benchmark.json).
+Rerun after restoring the supplied script's appearance and motion. Three repetitions per variant on a dedicated Blacksmith 4-vCPU Ubuntu worker, Python 3.12, Pillow 12.3, FFmpeg 6.1. Fixed comparison workload: six real contributors, six-second 720×720 / 30fps MP4, warm avatars. This is smaller than the restored 1080px / 60fps / 16s default. Wall time includes artwork and FFmpeg startup/encoding; excludes installation, API collection, and avatar downloads. [Raw rendering results](demo/render-benchmark.json).
 
 | renderer | x264 preset | median seconds | output bytes |
 | --- | --- | ---: | ---: |
-| cached background | ultrafast | 0.166 | 61,490 |
-| cached background | superfast | 0.215 | 46,711 |
-| cached background | veryfast | 0.226 | 38,069 |
-| restore moved regions | ultrafast | **0.146** | 61,490 |
-| restore moved regions | superfast | 0.202 | 46,711 |
-| restore moved regions | veryfast | 0.224 | 38,069 |
+| cached | ultrafast | 0.192 | 84,710 |
+| cached | superfast | 0.236 | 46,477 |
+| cached | veryfast | 0.250 | 32,432 |
+| dirty | ultrafast | 0.198 | 84,710 |
+| dirty | superfast | 0.226 | 46,477 |
+| dirty | veryfast | 0.252 | 32,432 |
 
-The fastest measured variant is the default. `--preset veryfast` trades speed for smaller output. GIF uses 480px / 15fps with a generated palette; its cost is additional and is not included in this MP4 table. Both formats share the same frame producer. No claim of a universal fastest renderer: timings vary by CPU, workload, network, and encoder.
+Both rendering strategies reuse static artwork; their ultrafast medians are within 6ms in this run. `--preset veryfast` trades speed for smaller output. GIF uses 480px / 15fps with a generated palette; its cost is additional and excluded from this MP4 table. Both formats share one frame producer. The original source remains in `benchmarks/reference.py`.
 
-The supplied script took 3.455s versus 0.177s for the prototype at matching 1080×1080 / 30fps / three seconds with the same real top-three contributors. This is an end-product comparison, **not an isolated algorithm speedup**: artwork and encoding settings differ (original medium/CRF17; prototype ultrafast/CRF23). Original source is preserved in `benchmarks/reference.py`; the harness changes duration, fps, and people, and warms avatars.
+Live GitHub collection measurements are unchanged: original REST median 9.968s, batched PR GraphQL 9.261s, plus concurrent release pages 3.659s. Every PR field and selected release matched in all nine runs. Sequential network measurements are affected by GitHub caches and latency. [Raw collection results](demo/collection-benchmark.json).
 
-Live GitHub collection on the development host: original REST median **9.968s**, batched PR GraphQL **9.261s**, plus concurrent release pages **3.659s**. Every PR field and selected release matched in all nine runs. These sequential network measurements are affected by GitHub caches and latency. [Raw collection results](demo/collection-benchmark.json).
-
-Reproduce rendering on a dedicated worker with `uv run benchmarks/bench.py --reference --runs 3`. Avoid mixing installation/network time into render comparisons. The initial committed prototype is `fff547a`; the render matrix compares its cached method to region restoration on the same worker and workload.
+Reproduce rendering on a dedicated worker with `uv run benchmarks/bench.py --runs 3`. No universal fastest-renderer claim; timings depend on the workload and machine.

@@ -43,7 +43,7 @@ def avatar(login, cache):
     if not path.exists():
         try:
             request = urllib.request.Request(
-                f"https://github.com/{urllib.parse.quote(login)}.png?size=128",
+                f"https://github.com/{urllib.parse.quote(login)}.png?size=512",
                 headers={"User-Agent": "release-balls"},
             )
             with urllib.request.urlopen(request, timeout=15) as response:
@@ -66,48 +66,55 @@ def avatar(login, cache):
         return image.convert("RGB")
 
 
+def load_font(size):
+    path = Path("/System/Library/Fonts/HelveticaNeue.ttc")
+    return (
+        ImageFont.truetype(str(path), size=size, index=0)
+        if path.exists()
+        else ImageFont.load_default(size=size)
+    )
+
+
 def artwork(repo, subtitle, rows, metric, width, cache):
-    scale = width / 720
+    # Keep the supplied script's composition; only cache its static artwork.
+    scale = width * 2 / 1080
 
     def n(value):
         return round(value * scale)
 
-    canvas = Image.new("RGB", (width, width), "#fafaf9")
+    canvas = Image.new("RGB", (width * 2, width * 2), "white")
     draw = ImageDraw.Draw(canvas)
-
-    def text(x, y, value, size, color="#18181b"):
-        draw.text(
-            (n(x), n(y)), value, font=ImageFont.load_default(size=n(size)), fill=color
-        )
-
-    text(40, 32, "RELEASE / BALLS", 15, "#71717a")
-    text(
-        40,
-        68,
-        {
-            "author": "who shipped it.",
-            "merger": "who merged it.",
-            "changes": "lines changed.",
-        }[metric],
-        46,
+    title = (
+        ("Lines changed" if metric == "changes" else "Pull requests merged")
+        + " in "
+        + subtitle
     )
-    text(40, 132, repo, 20)
-    text(40, 166, subtitle, 14, "#71717a")
-    row_height = min(85, 405 / max(len(rows), 1))
+    title_font = load_font(n(48))
+    while draw.textlength(title, font=title_font) > n(1000):
+        title_font = load_font(title_font.size - 1)
+    title_box = draw.textbbox((0, 0), title, font=title_font)
+    draw.text(
+        ((width * 2 - (title_box[2] - title_box[0])) / 2, n(90)),
+        title,
+        font=title_font,
+        fill="black",
+    )
     sprites = []
+    row_height = 250 if len(rows) <= 3 else 500 / (len(rows) - 1)
     with ThreadPoolExecutor(max_workers=6) as pool:
         sources = list(pool.map(lambda row: avatar(row[0], cache), rows))
     for index, ((login, count), source) in enumerate(zip(rows, sources)):
-        y = n(253 + index * row_height)
-        radius = n(min(25, row_height * 0.32))
-        draw.line((n(270), y, n(655), y), fill="#dededb", width=max(1, n(2)))
-        text(40, y / scale - 22, login[:23], 19)
-        text(
-            40,
-            y / scale + 8,
-            f"{count:,} " + ("lines" if metric == "changes" else "PRs"),
-            14,
-            "#71717a",
+        y = 340 + index * row_height
+        radius = round(min(76, row_height * 0.4) * width / 1080)
+        name_font = load_font(n(44))
+        while draw.textlength(login, font=name_font) > n(190):
+            name_font = load_font(name_font.size - 1)
+        draw.text((n(70), n(y - 43)), login, font=name_font, fill="black")
+        draw.text(
+            (n(72), n(y + 17)),
+            f"{count:,} " + ("lines" if metric == "changes" else "merges"),
+            font=load_font(n(25)),
+            fill="black",
         )
         diameter = radius * 2
         ball = ImageOps.fit(
@@ -121,16 +128,19 @@ def artwork(repo, subtitle, rows, metric, width, cache):
             (
                 ball,
                 mask.resize((diameter, diameter), Image.Resampling.LANCZOS),
-                y,
+                round(y * width / 1080),
                 radius,
                 count,
             )
         )
     if not rows:
-        text(40, 310, "no matching contributions", 26)
-    text(40, 650, "speed is proportional to count", 14, "#71717a")
-    text(40, 678, "source: merged PRs linked in release notes", 12, "#71717a")
-    return canvas, sprites
+        draw.text(
+            (n(70), n(340)),
+            "No matching contributions",
+            font=load_font(n(44)),
+            fill="black",
+        )
+    return canvas.resize((width, width), Image.Resampling.LANCZOS), sprites
 
 
 def render(
@@ -140,12 +150,12 @@ def render(
     metric,
     output,
     formats,
-    width=720,
-    fps=30,
-    duration=6,
+    width=1080,
+    fps=60,
+    duration=16,
     preset="ultrafast",
     strategy="dirty",
-    cache=Path(".cache/avatars"),
+    cache=Path(".cache/avatars-512"),
 ):
     background, sprites = artwork(repo, subtitle, rows, metric, width, cache)
     command = [
@@ -196,8 +206,7 @@ def render(
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     canvas = background.copy()
     previous = []
-    left, span = round(width * 270 / 720), round(width * 385 / 720)
-    maximum = max(1, max((r[1] for r in rows), default=1))
+    left, span = round(width * 350 / 1080), round(width * 630 / 1080)
     try:
         for frame in range(max(1, round(fps * duration))):
             if strategy == "cached":
@@ -207,7 +216,7 @@ def render(
                     canvas.paste(background.crop(box), box)
             previous = []
             for ball, mask, y, radius, count in sprites:
-                distance = (frame / fps) * span * 0.8 * count / maximum
+                distance = count * 7.2 * (width / 1080) * frame / fps
                 phase = distance % (2 * span)
                 x = left + round(phase if phase <= span else 2 * span - phase)
                 canvas.paste(ball, (x - radius, y - radius), mask)
@@ -239,7 +248,7 @@ def main():
     )
     parser.add_argument("--users", default="", help="comma-separated GitHub logins")
     parser.add_argument("--include-bots", action="store_true")
-    parser.add_argument("--top", type=int, default=6)
+    parser.add_argument("--top", type=int, default=3)
     parser.add_argument("--format", default="mp4", choices=["mp4", "gif", "both"])
     parser.add_argument("--per-release", action="store_true")
     parser.add_argument(
@@ -251,9 +260,9 @@ def main():
         default="",
         help="public URL directory for release-note embeds",
     )
-    parser.add_argument("--width", type=int, default=720)
-    parser.add_argument("--fps", type=int, default=30)
-    parser.add_argument("--duration", type=float, default=6)
+    parser.add_argument("--width", type=int, default=1080)
+    parser.add_argument("--fps", type=int, default=60)
+    parser.add_argument("--duration", type=float, default=16)
     parser.add_argument(
         "--preset", choices=["ultrafast", "superfast", "veryfast"], default="ultrafast"
     )
@@ -291,7 +300,7 @@ def main():
         subtitle = (
             releases[0]["tag"]
             if len(releases) == 1
-            else f"latest {len(releases)} releases / {sum(len(r['prs']) for r in releases)} listed PRs"
+            else f"the last {len(releases)} releases"
         )
         stem = (
             re.sub(r"[^\w.-]", "-", releases[0]["tag"])
