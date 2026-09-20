@@ -1,0 +1,16 @@
+[project]
+name = "release-balls"
+version = "0.1.0"
+description = "Tiny release contributor animations for CI"
+requires-python = ">=3.11"
+dependencies = ["pillow>=12,<13"]
+
+[project.scripts]
+release-balls = "release_balls:main"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+py-modules = ["release_balls", "data"]

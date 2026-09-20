@@ -1,0 +1,29 @@
+name: release videos
+on:
+  workflow_dispatch:
+    inputs:
+      metric:
+        type: choice
+        options: [author, merger, changes]
+        default: author
+      format:
+        type: choice
+        options: [mp4, gif, both]
+        default: both
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        id: balls
+        with:
+          repository: pingdotgg/t3code
+          metric: ${{ inputs.metric }}
+          format: ${{ inputs.format }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-balls
+          path: ${{ steps.balls.outputs.directory }}
