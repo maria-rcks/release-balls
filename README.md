@@ -11,7 +11,7 @@ uv run release-balls --help
 
 Install FFmpeg with your package manager. Python 3.11+; `uv sync --frozen` installs the pinned dependency. Any CI that has Python and FFmpeg can run the CLI. Authentication uses `GH_TOKEN`, `GITHUB_TOKEN`, or an existing `gh` login. Tokens never go to avatar URLs.
 
-`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition keeps the supplied script's white background, centered title, large avatars, black labels, 1080px, 60fps, and 16 seconds. The compact 36px title sits near the top. A faded repo URL overlays the bottom-right corner without reserving space. All names share a 44px font; the count sits 12px below the name's font bounds. The avatar region shifts right to fit labels; exceptionally long logins use an ellipsis instead of a smaller font, with full identities preserved in JSON. The leader crosses the available space in 1.1 seconds and other speeds keep the same count ratios. Speeds are normalized within each video, so they are not comparable between separate videos.
+`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition keeps the supplied script's white background, centered title, large avatars, black labels, 1080px, 60fps, and 16 seconds. The 48px title sits near the top, with the contributor names and avatars centered vertically as one group for any row count. A faded repo URL overlays the bottom-right corner without reserving space. All names share a 44px font; the count sits 12px below the name's font bounds. The avatar region shifts right to fit labels; exceptionally long logins use an ellipsis instead of a smaller font, with full identities preserved in JSON. The leader crosses the available space in 1.1 seconds and other speeds keep the same count ratios. Speeds are normalized within each video, so they are not comparable between separate videos.
 
 The prototype counts **merged PR URLs explicitly linked in release notes**, not every commit between tags. It scans all release pages and sorts by publication time, excluding drafts and tags that don't match. It rejects unsupported notes instead of silently counting zero. Custom providers can supply the same `data.json` schema. Live collection currently supports GitHub.com only.
 
@@ -61,11 +61,11 @@ Snapshot fetched September 20, 2026. Latest five published nightly releases:
 
 19 unique PRs. Author leaders: cestercian 5, juliusmarminge 4, Bil0000 3. Merge actors: juliusmarminge 11, shivamhwp 5, maria-rcks 3. Full source, PR URLs, dates, and identities are in [demo/data.json](demo/data.json).
 
-![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/b8b83e03-0b1e-4776-9691-f8070b1a72da/five-nightlies.mp4)
+![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/1014dbf4-1eef-48ed-8125-968e9a7c4928/five-nightlies.mp4)
 
-![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/44a1f5f4-5d25-425a-adff-7fbe12502603/summary-author.gif)
+![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/a3be886c-f9ca-4c9e-8cb8-07b3b05da881/summary-author.gif)
 
-![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/5a9157c9-52a5-4765-96da-f40adfbeb0f0/summary-merger.gif)
+![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/9f23d1dd-99eb-4624-b645-d1e00943ec7f/summary-merger.gif)
 
 ## Benchmarks
 
@@ -73,12 +73,12 @@ Rerun with the current typography, watermark, and faster motion. Three repetitio
 
 | renderer | x264 preset | median seconds | output bytes |
 | --- | --- | ---: | ---: |
-| cached | ultrafast | 0.188 | 69,317 |
-| cached | superfast | 0.234 | 50,937 |
-| cached | veryfast | 0.255 | 40,996 |
-| dirty | ultrafast | 0.182 | 69,317 |
-| dirty | superfast | 0.232 | 50,937 |
-| dirty | veryfast | 0.256 | 40,996 |
+| cached | ultrafast | 0.195 | 74,009 |
+| cached | superfast | 0.231 | 54,534 |
+| cached | veryfast | 0.251 | 42,368 |
+| dirty | ultrafast | 0.158 | 74,009 |
+| dirty | superfast | 0.231 | 54,534 |
+| dirty | veryfast | 0.255 | 42,368 |
 
 Both rendering strategies reuse static artwork; the current default is the fastest measured variant in this run. `--preset veryfast` trades speed for smaller output. GIF uses 480px / 15fps with a generated palette; its cost is additional and excluded from this MP4 table. Both formats share one frame producer. The original source remains in `benchmarks/reference.py`.
 

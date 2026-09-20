@@ -89,7 +89,7 @@ def artwork(repo, subtitle, rows, metric, width, cache):
         + " in "
         + subtitle
     )
-    title_font = load_font(n(36))
+    title_font = load_font(n(48))
     while draw.textlength(title, font=title_font) > n(1000):
         title_font = load_font(title_font.size - 1)
     title_box = draw.textbbox((0, 0), title, font=title_font)
@@ -125,7 +125,7 @@ def artwork(repo, subtitle, rows, metric, width, cache):
     with ThreadPoolExecutor(max_workers=6) as pool:
         sources = list(pool.map(lambda row: avatar(row[0], cache), rows))
     for index, ((login, count), source) in enumerate(zip(rows, sources)):
-        y = 340 + index * row_height
+        y = 540 + (index - (len(rows) - 1) / 2) * row_height
         radius = round(min(76, row_height * 0.4) * width / 1080)
         draw.text((n(70), n(y - 43)), labels[index], font=name_font, fill="black")
         count_label = f"{count:,} " + ("lines" if metric == "changes" else "merges")
