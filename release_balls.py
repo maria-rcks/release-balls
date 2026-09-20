@@ -94,7 +94,7 @@ def artwork(repo, subtitle, rows, metric, width, cache):
         title_font = load_font(title_font.size - 1)
     title_box = draw.textbbox((0, 0), title, font=title_font)
     draw.text(
-        ((width * 2 - (title_box[2] - title_box[0])) / 2, n(48)),
+        ((width * 2 - (title_box[2] - title_box[0])) / 2, n(80)),
         title,
         font=title_font,
         fill="black",
