@@ -11,7 +11,7 @@ uv run release-balls --help
 
 Install FFmpeg with your package manager. Python 3.11+; `uv sync --frozen` installs the pinned dependency. Any CI that has Python and FFmpeg can run the CLI. Authentication uses `GH_TOKEN`, `GITHUB_TOKEN`, or an existing `gh` login. Tokens never go to avatar URLs.
 
-`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition keeps the supplied script's white background, centered title, large avatars, black labels, 1080px, 60fps, and 16 seconds. The repo appears below the title. All names share a 44px font; the count sits 6px below the name's font bounds. The avatar region shifts right to fit labels; exceptionally long logins use an ellipsis instead of a smaller font, with full identities preserved in JSON. The leader crosses the available space in 1.1 seconds and other speeds keep the same count ratios. Speeds are normalized within each video, so they are not comparable between separate videos.
+`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition keeps the supplied script's white background, centered title, large avatars, black labels, 1080px, 60fps, and 16 seconds. The compact 36px title sits near the top. A faded repo URL overlays the bottom-right corner without reserving space. All names share a 44px font; the count sits 12px below the name's font bounds. The avatar region shifts right to fit labels; exceptionally long logins use an ellipsis instead of a smaller font, with full identities preserved in JSON. The leader crosses the available space in 1.1 seconds and other speeds keep the same count ratios. Speeds are normalized within each video, so they are not comparable between separate videos.
 
 The prototype counts **merged PR URLs explicitly linked in release notes**, not every commit between tags. It scans all release pages and sorts by publication time, excluding drafts and tags that don't match. It rejects unsupported notes instead of silently counting zero. Custom providers can supply the same `data.json` schema. Live collection currently supports GitHub.com only.
 
@@ -43,7 +43,7 @@ Use an Ubuntu runner. The action installs FFmpeg only if missing; provisioning t
 
 ## Release notes and other actions
 
-GIFs embed in GitHub Markdown. MP4 release assets are downloadable links; GitHub does not universally render arbitrary MP4 links inline. Set `asset-base-url` (CLI: `--asset-base-url`) to the eventual public asset directory, such as `https://github.com/OWNER/REPO/releases/download/TAG`. The generated `embed.md` then contains usable GIF embeds and video links once files have been uploaded. Without it, links are relative filenames.
+GIFs embed in GitHub Markdown; the generated GIF embed links to the source repository. MP4/GIF pixels cannot contain clickable regions, so the visible watermark is a URL and the GIF embed supplies its link. MP4 release assets are downloadable links; GitHub does not universally render arbitrary MP4 links inline. Set `asset-base-url` (CLI: `--asset-base-url`) to the eventual public asset directory, such as `https://github.com/OWNER/REPO/releases/download/TAG`. The generated `embed.md` then contains usable GIF embeds and video links once files have been uploaded. Without it, links are relative filenames.
 
 A later authorized workflow step can upload `directory/*.gif` and `directory/*.mp4` with `gh release upload`, and append `embed.md` to the existing release body. Give only that publishing job `contents: write`. Uploading assets alone does not insert them in release notes. Private assets require authentication and may not work as externally embedded media. The renderer itself never changes releases or sends messages.
 
@@ -61,24 +61,24 @@ Snapshot fetched September 20, 2026. Latest five published nightly releases:
 
 19 unique PRs. Author leaders: cestercian 5, juliusmarminge 4, Bil0000 3. Merge actors: juliusmarminge 11, shivamhwp 5, maria-rcks 3. Full source, PR URLs, dates, and identities are in [demo/data.json](demo/data.json).
 
-![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/4e5f38ee-d67c-40a3-a3f3-a22ac55596d0/five-nightlies.mp4)
+![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/b8b83e03-0b1e-4776-9691-f8070b1a72da/five-nightlies.mp4)
 
-![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/186de85c-570a-499a-8b67-a1397eecd8a1/summary-author.gif)
+![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/44a1f5f4-5d25-425a-adff-7fbe12502603/summary-author.gif)
 
-![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/0009e0ae-3c5b-4192-9de8-21ff897ba65f/summary-merger.gif)
+![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/5a9157c9-52a5-4765-96da-f40adfbeb0f0/summary-merger.gif)
 
 ## Benchmarks
 
-Rerun with the current typography, repo label, and faster motion. Three repetitions per variant on a dedicated Blacksmith 4-vCPU Ubuntu worker, Python 3.12, Pillow 12.3, FFmpeg 6.1. Fixed comparison workload: six real contributors, six-second 720×720 / 30fps MP4, warm avatars. This is smaller than the restored 1080px / 60fps / 16s default. Wall time includes artwork and FFmpeg startup/encoding; excludes installation, API collection, and avatar downloads. [Raw rendering results](demo/render-benchmark.json).
+Rerun with the current typography, watermark, and faster motion. Three repetitions per variant on a dedicated Blacksmith 4-vCPU Ubuntu worker, Python 3.12, Pillow 12.3, FFmpeg 6.1. Fixed comparison workload: six real contributors, six-second 720×720 / 30fps MP4, warm avatars. This is smaller than the restored 1080px / 60fps / 16s default. Wall time includes artwork and FFmpeg startup/encoding; excludes installation, API collection, and avatar downloads. [Raw rendering results](demo/render-benchmark.json).
 
 | renderer | x264 preset | median seconds | output bytes |
 | --- | --- | ---: | ---: |
-| cached | ultrafast | 0.201 | 72,835 |
-| cached | superfast | 0.233 | 52,165 |
-| cached | veryfast | 0.260 | 42,003 |
-| dirty | ultrafast | 0.174 | 72,835 |
-| dirty | superfast | 0.225 | 52,165 |
-| dirty | veryfast | 0.250 | 42,003 |
+| cached | ultrafast | 0.188 | 69,317 |
+| cached | superfast | 0.234 | 50,937 |
+| cached | veryfast | 0.255 | 40,996 |
+| dirty | ultrafast | 0.182 | 69,317 |
+| dirty | superfast | 0.232 | 50,937 |
+| dirty | veryfast | 0.256 | 40,996 |
 
 Both rendering strategies reuse static artwork; the current default is the fastest measured variant in this run. `--preset veryfast` trades speed for smaller output. GIF uses 480px / 15fps with a generated palette; its cost is additional and excluded from this MP4 table. Both formats share one frame producer. The original source remains in `benchmarks/reference.py`.
 

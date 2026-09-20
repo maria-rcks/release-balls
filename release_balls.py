@@ -89,20 +89,22 @@ def artwork(repo, subtitle, rows, metric, width, cache):
         + " in "
         + subtitle
     )
-    title_font = load_font(n(48))
+    title_font = load_font(n(36))
     while draw.textlength(title, font=title_font) > n(1000):
         title_font = load_font(title_font.size - 1)
     title_box = draw.textbbox((0, 0), title, font=title_font)
     draw.text(
-        ((width * 2 - (title_box[2] - title_box[0])) / 2, n(90)),
+        ((width * 2 - (title_box[2] - title_box[0])) / 2, n(48)),
         title,
         font=title_font,
         fill="black",
     )
-    repo_font = load_font(n(25))
-    repo_width = draw.textlength(repo, font=repo_font)
     draw.text(
-        ((width * 2 - repo_width) / 2, n(157)), repo, font=repo_font, fill="black"
+        (width * 2 - n(36), width * 2 - n(36)),
+        f"github.com/{repo}",
+        font=load_font(n(22)),
+        fill="#a3a3a3",
+        anchor="rb",
     )
     # One font per role: never shrink an individual contributor's name.
     name_font = load_font(n(44))
@@ -128,7 +130,7 @@ def artwork(repo, subtitle, rows, metric, width, cache):
         draw.text((n(70), n(y - 43)), labels[index], font=name_font, fill="black")
         count_label = f"{count:,} " + ("lines" if metric == "changes" else "merges")
         name_bottom = n(y - 43) + name_font.getbbox("Ag")[3]
-        count_y = name_bottom + n(6) - count_font.getbbox(count_label)[1]
+        count_y = name_bottom + n(12) - count_font.getbbox(count_label)[1]
         draw.text((n(72), count_y), count_label, font=count_font, fill="black")
         diameter = radius * 2
         ball = ImageOps.fit(
@@ -362,7 +364,7 @@ def main():
             )
             label = f"{args.metric} contributions ({', '.join(artifact['releases'])})"
             lines.append(
-                f"![{label}]({url})"
+                f"[![{label}]({url})](https://github.com/{data['repo']})"
                 if name.endswith(".gif")
                 else f"[{label} video]({url})"
             )
