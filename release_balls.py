@@ -99,10 +99,17 @@ def artwork(repo, subtitle, rows, metric, width, cache):
         font=title_font,
         fill="black",
     )
+    watermark_position = (width * 2 - n(36), width * 2 - n(36))
+    watermark_font = load_font(n(22))
+    watermark = f"github.com/{repo}"
+    watermark_top = draw.textbbox(
+        watermark_position, watermark, font=watermark_font, anchor="rb"
+    )[1]
+    section_center = (n(80) + title_box[3] + watermark_top) / (2 * scale)
     draw.text(
-        (width * 2 - n(36), width * 2 - n(36)),
-        f"github.com/{repo}",
-        font=load_font(n(22)),
+        watermark_position,
+        watermark,
+        font=watermark_font,
         fill="#a3a3a3",
         anchor="rb",
     )
@@ -125,7 +132,7 @@ def artwork(repo, subtitle, rows, metric, width, cache):
     with ThreadPoolExecutor(max_workers=6) as pool:
         sources = list(pool.map(lambda row: avatar(row[0], cache), rows))
     for index, ((login, count), source) in enumerate(zip(rows, sources)):
-        y = 540 + (index - (len(rows) - 1) / 2) * row_height
+        y = section_center + (index - (len(rows) - 1) / 2) * row_height
         radius = round(min(76, row_height * 0.4) * width / 1080)
         draw.text((n(70), n(y - 43)), labels[index], font=name_font, fill="black")
         count_label = f"{count:,} " + ("lines" if metric == "changes" else "merges")
