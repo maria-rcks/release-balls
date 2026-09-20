@@ -99,6 +99,25 @@ def artwork(repo, subtitle, rows, metric, width, cache):
         font=title_font,
         fill="black",
     )
+    repo_font = load_font(n(25))
+    repo_width = draw.textlength(repo, font=repo_font)
+    draw.text(
+        ((width * 2 - repo_width) / 2, n(157)), repo, font=repo_font, fill="black"
+    )
+    # One font per role: never shrink an individual contributor's name.
+    name_font = load_font(n(44))
+    count_font = load_font(n(25))
+    labels = []
+    for login, _ in rows:
+        label = login
+        while draw.textlength(label, font=name_font) > n(360):
+            label = label.rstrip("…")[:-1] + "…"
+        labels.append(label)
+    label_width = (
+        max((draw.textlength(label, font=name_font) for label in labels), default=0)
+        / scale
+    )
+    left = round(max(350, 70 + label_width + 24 + 76) * width / 1080)
     sprites = []
     row_height = 250 if len(rows) <= 3 else 500 / (len(rows) - 1)
     with ThreadPoolExecutor(max_workers=6) as pool:
@@ -106,16 +125,11 @@ def artwork(repo, subtitle, rows, metric, width, cache):
     for index, ((login, count), source) in enumerate(zip(rows, sources)):
         y = 340 + index * row_height
         radius = round(min(76, row_height * 0.4) * width / 1080)
-        name_font = load_font(n(44))
-        while draw.textlength(login, font=name_font) > n(190):
-            name_font = load_font(name_font.size - 1)
-        draw.text((n(70), n(y - 43)), login, font=name_font, fill="black")
-        draw.text(
-            (n(72), n(y + 17)),
-            f"{count:,} " + ("lines" if metric == "changes" else "merges"),
-            font=load_font(n(25)),
-            fill="black",
-        )
+        draw.text((n(70), n(y - 43)), labels[index], font=name_font, fill="black")
+        count_label = f"{count:,} " + ("lines" if metric == "changes" else "merges")
+        name_bottom = n(y - 43) + name_font.getbbox("Ag")[3]
+        count_y = name_bottom + n(6) - count_font.getbbox(count_label)[1]
+        draw.text((n(72), count_y), count_label, font=count_font, fill="black")
         diameter = radius * 2
         ball = ImageOps.fit(
             source, (diameter, diameter), method=Image.Resampling.LANCZOS
@@ -140,7 +154,7 @@ def artwork(repo, subtitle, rows, metric, width, cache):
             font=load_font(n(44)),
             fill="black",
         )
-    return canvas.resize((width, width), Image.Resampling.LANCZOS), sprites
+    return canvas.resize((width, width), Image.Resampling.LANCZOS), sprites, left
 
 
 def render(
@@ -157,7 +171,7 @@ def render(
     strategy="dirty",
     cache=Path(".cache/avatars-512"),
 ):
-    background, sprites = artwork(repo, subtitle, rows, metric, width, cache)
+    background, sprites, left = artwork(repo, subtitle, rows, metric, width, cache)
     command = [
         "ffmpeg",
         "-hide_banner",
@@ -206,7 +220,8 @@ def render(
     process = subprocess.Popen(command, stdin=subprocess.PIPE, stderr=subprocess.PIPE)
     canvas = background.copy()
     previous = []
-    left, span = round(width * 350 / 1080), round(width * 630 / 1080)
+    span = round(width * 980 / 1080) - left
+    maximum = max(1, max((count for _, count in rows), default=0))
     try:
         for frame in range(max(1, round(fps * duration))):
             if strategy == "cached":
@@ -216,7 +231,7 @@ def render(
                     canvas.paste(background.crop(box), box)
             previous = []
             for ball, mask, y, radius, count in sprites:
-                distance = count * 7.2 * (width / 1080) * frame / fps
+                distance = (span / 1.1) * (count / maximum) * frame / fps
                 phase = distance % (2 * span)
                 x = left + round(phase if phase <= span else 2 * span - phase)
                 canvas.paste(ball, (x - radius, y - radius), mask)

@@ -11,7 +11,7 @@ uv run release-balls --help
 
 Install FFmpeg with your package manager. Python 3.11+; `uv sync --frozen` installs the pinned dependency. Any CI that has Python and FFmpeg can run the CLI. Authentication uses `GH_TOKEN`, `GITHUB_TOKEN`, or an existing `gh` login. Tokens never go to avatar URLs.
 
-`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition matches the supplied script: white background, centered title, large avatars, black name/count labels, 1080px, 60fps, and 16 seconds. Avatars follow its original bounce formula: count × 7.2 pixels per second at 1080px. Long logins shrink to fit the original label column.
+`author` counts merged PRs by author; `merger` counts the actor GitHub records as merging the PR; `changes` sums additions + deletions by author. `--users` filters logins; bots are excluded unless `--include-bots`. `--top` selects 1–6 rows, defaulting to three. Counts are deduplicated across releases in aggregate mode. Ties sort alphabetically. Missing actors are omitted. The default composition keeps the supplied script's white background, centered title, large avatars, black labels, 1080px, 60fps, and 16 seconds. The repo appears below the title. All names share a 44px font; the count sits 6px below the name's font bounds. The avatar region shifts right to fit labels; exceptionally long logins use an ellipsis instead of a smaller font, with full identities preserved in JSON. The leader crosses the available space in 1.1 seconds and other speeds keep the same count ratios. Speeds are normalized within each video, so they are not comparable between separate videos.
 
 The prototype counts **merged PR URLs explicitly linked in release notes**, not every commit between tags. It scans all release pages and sorts by publication time, excluding drafts and tags that don't match. It rejects unsupported notes instead of silently counting zero. Custom providers can supply the same `data.json` schema. Live collection currently supports GitHub.com only.
 
@@ -61,26 +61,26 @@ Snapshot fetched September 20, 2026. Latest five published nightly releases:
 
 19 unique PRs. Author leaders: cestercian 5, juliusmarminge 4, Bil0000 3. Merge actors: juliusmarminge 11, shivamhwp 5, maria-rcks 3. Full source, PR URLs, dates, and identities are in [demo/data.json](demo/data.json).
 
-![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/b948467f-6370-4e45-8e63-302a3dad1042/five-nightlies.mp4)
+![five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/4e5f38ee-d67c-40a3-a3f3-a22ac55596d0/five-nightlies.mp4)
 
-![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/a3f791a8-40de-4eb5-86cd-a742ba946eaf/summary-author.gif)
+![authors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/186de85c-570a-499a-8b67-a1397eecd8a1/summary-author.gif)
 
-![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/8aca6708-f4cf-4808-adae-9bcaefefbd3e/summary-merger.gif)
+![merge actors across five t3code nightlies](https://uploads-production-47e4.up.railway.app/files/0009e0ae-3c5b-4192-9de8-21ff897ba65f/summary-merger.gif)
 
 ## Benchmarks
 
-Rerun after restoring the supplied script's appearance and motion. Three repetitions per variant on a dedicated Blacksmith 4-vCPU Ubuntu worker, Python 3.12, Pillow 12.3, FFmpeg 6.1. Fixed comparison workload: six real contributors, six-second 720×720 / 30fps MP4, warm avatars. This is smaller than the restored 1080px / 60fps / 16s default. Wall time includes artwork and FFmpeg startup/encoding; excludes installation, API collection, and avatar downloads. [Raw rendering results](demo/render-benchmark.json).
+Rerun with the current typography, repo label, and faster motion. Three repetitions per variant on a dedicated Blacksmith 4-vCPU Ubuntu worker, Python 3.12, Pillow 12.3, FFmpeg 6.1. Fixed comparison workload: six real contributors, six-second 720×720 / 30fps MP4, warm avatars. This is smaller than the restored 1080px / 60fps / 16s default. Wall time includes artwork and FFmpeg startup/encoding; excludes installation, API collection, and avatar downloads. [Raw rendering results](demo/render-benchmark.json).
 
 | renderer | x264 preset | median seconds | output bytes |
 | --- | --- | ---: | ---: |
-| cached | ultrafast | 0.192 | 84,710 |
-| cached | superfast | 0.236 | 46,477 |
-| cached | veryfast | 0.250 | 32,432 |
-| dirty | ultrafast | 0.198 | 84,710 |
-| dirty | superfast | 0.226 | 46,477 |
-| dirty | veryfast | 0.252 | 32,432 |
+| cached | ultrafast | 0.201 | 72,835 |
+| cached | superfast | 0.233 | 52,165 |
+| cached | veryfast | 0.260 | 42,003 |
+| dirty | ultrafast | 0.174 | 72,835 |
+| dirty | superfast | 0.225 | 52,165 |
+| dirty | veryfast | 0.250 | 42,003 |
 
-Both rendering strategies reuse static artwork; their ultrafast medians are within 6ms in this run. `--preset veryfast` trades speed for smaller output. GIF uses 480px / 15fps with a generated palette; its cost is additional and excluded from this MP4 table. Both formats share one frame producer. The original source remains in `benchmarks/reference.py`.
+Both rendering strategies reuse static artwork; the current default is the fastest measured variant in this run. `--preset veryfast` trades speed for smaller output. GIF uses 480px / 15fps with a generated palette; its cost is additional and excluded from this MP4 table. Both formats share one frame producer. The original source remains in `benchmarks/reference.py`.
 
 Live GitHub collection measurements are unchanged: original REST median 9.968s, batched PR GraphQL 9.261s, plus concurrent release pages 3.659s. Every PR field and selected release matched in all nine runs. Sequential network measurements are affected by GitHub caches and latency. [Raw collection results](demo/collection-benchmark.json).
 
