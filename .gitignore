@@ -9,3 +9,5 @@ demo/**/*.png
 demo/merger/
 demo/nightlies/
 demo/manifest.json
+
+/target/

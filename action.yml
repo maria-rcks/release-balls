@@ -1,5 +1,5 @@
 name: release balls
-description: Render release contributor videos and GIFs with Pillow and FFmpeg
+description: Render release contributor videos and GIFs with Rust and FFmpeg
 inputs:
   repository:
     description: GitHub owner/repository to read
@@ -44,9 +44,25 @@ outputs:
 runs:
   using: composite
   steps:
-    - uses: astral-sh/setup-uv@v6
+    - id: binary-key
+      shell: bash
+      run: |
+        digest=$(cat "$GITHUB_ACTION_PATH"/Cargo.toml "$GITHUB_ACTION_PATH"/Cargo.lock "$GITHUB_ACTION_PATH"/src/*.rs "$GITHUB_ACTION_PATH"/assets/*.ttf | sha256sum | cut -d ' ' -f 1)
+        echo "key=release-balls-rust-${{ runner.os }}-${{ runner.arch }}-${ImageOS:-unknown}-$digest" >> "$GITHUB_OUTPUT"
+    - uses: actions/cache@v4
+      id: binary
       with:
-        enable-cache: false
+        path: ${{ github.action_path }}/target/release/release-balls
+        key: ${{ steps.binary-key.outputs.key }}
+    - name: Build Rust binary on cache miss
+      if: steps.binary.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        if ! pkg-config --exists freetype2; then
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libfreetype6-dev pkg-config
+        fi
+        cargo build --release --locked --manifest-path "$GITHUB_ACTION_PATH/Cargo.toml"
     - name: Install FFmpeg if missing
       shell: bash
       run: |
@@ -67,6 +83,6 @@ runs:
         RB_ASSET_BASE: ${{ inputs.asset-base-url }}
         RB_OUTPUT: ${{ inputs.output }}
       run: |
-        uv run --project "$GITHUB_ACTION_PATH" --frozen release-balls \
+        "$GITHUB_ACTION_PATH/target/release/release-balls" \
           --repo "$RB_REPOSITORY" --releases "$RB_RELEASES" --match "$RB_MATCH" \
           --metric "$RB_METRIC" --users "$RB_USERS" --format "$RB_FORMAT" --out "$RB_OUTPUT" --asset-base-url "$RB_ASSET_BASE"
