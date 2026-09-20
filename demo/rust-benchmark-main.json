@@ -1,0 +1,129 @@
+{
+  "baseline": "fff547a",
+  "candidate": "78c8f6c",
+  "workload": "same real snapshot, top3 merger,1080px60fps16s,ultrafastCRF23; warm identical512px source avatars",
+  "limitation": "main has earlier layout and motion; use4c29752 comparison for accepted-layout baseline",
+  "runs": 3,
+  "results": [
+    {
+      "format": "mp4",
+      "median_seconds": {
+        "main": 1.4741608539998197,
+        "rust": 0.7305564489997778
+      },
+      "samples": [
+        {
+          "engine": "main",
+          "run": 1,
+          "seconds": 1.4113683780001338
+        },
+        {
+          "engine": "rust",
+          "run": 1,
+          "seconds": 0.796813130999908
+        },
+        {
+          "engine": "rust",
+          "run": 2,
+          "seconds": 0.7051919300001828
+        },
+        {
+          "engine": "main",
+          "run": 2,
+          "seconds": 1.4741608539998197
+        },
+        {
+          "engine": "main",
+          "run": 3,
+          "seconds": 1.4910976820001451
+        },
+        {
+          "engine": "rust",
+          "run": 3,
+          "seconds": 0.7305564489997778
+        }
+      ],
+      "rust_minus_main_percent": -50.4425553685292
+    },
+    {
+      "format": "gif",
+      "median_seconds": {
+        "main": 1.4982814290001443,
+        "rust": 0.3452788630002033
+      },
+      "samples": [
+        {
+          "engine": "main",
+          "run": 1,
+          "seconds": 1.45562599699997
+        },
+        {
+          "engine": "rust",
+          "run": 1,
+          "seconds": 0.3456378260002566
+        },
+        {
+          "engine": "rust",
+          "run": 2,
+          "seconds": 0.3452788630002033
+        },
+        {
+          "engine": "main",
+          "run": 2,
+          "seconds": 1.515295882999908
+        },
+        {
+          "engine": "main",
+          "run": 3,
+          "seconds": 1.4982814290001443
+        },
+        {
+          "engine": "rust",
+          "run": 3,
+          "seconds": 0.3392767330001334
+        }
+      ],
+      "rust_minus_main_percent": -76.95500616125102
+    },
+    {
+      "format": "both",
+      "median_seconds": {
+        "main": 2.9149681200001396,
+        "rust": 0.769452352999906
+      },
+      "samples": [
+        {
+          "engine": "main",
+          "run": 1,
+          "seconds": 2.9149681200001396
+        },
+        {
+          "engine": "rust",
+          "run": 1,
+          "seconds": 0.769452352999906
+        },
+        {
+          "engine": "rust",
+          "run": 2,
+          "seconds": 0.7001320689996646
+        },
+        {
+          "engine": "main",
+          "run": 2,
+          "seconds": 2.9705456430001504
+        },
+        {
+          "engine": "main",
+          "run": 3,
+          "seconds": 2.9114533319998372
+        },
+        {
+          "engine": "rust",
+          "run": 3,
+          "seconds": 0.7977063369999087
+        }
+      ],
+      "rust_minus_main_percent": -73.60340417720008
+    }
+  ]
+}

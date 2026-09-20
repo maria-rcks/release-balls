@@ -48,11 +48,12 @@ runs:
       shell: bash
       run: |
         digest=$(cat "$GITHUB_ACTION_PATH"/Cargo.toml "$GITHUB_ACTION_PATH"/Cargo.lock "$GITHUB_ACTION_PATH"/src/*.rs "$GITHUB_ACTION_PATH"/assets/*.ttf | sha256sum | cut -d ' ' -f 1)
+        echo "path=$(realpath -m "$GITHUB_ACTION_PATH/target/release/release-balls")" >> "$GITHUB_OUTPUT"
         echo "key=release-balls-rust-${{ runner.os }}-${{ runner.arch }}-${ImageOS:-unknown}-$digest" >> "$GITHUB_OUTPUT"
     - uses: actions/cache@v4
       id: binary
       with:
-        path: ${{ github.action_path }}/target/release/release-balls
+        path: ${{ steps.binary-key.outputs.path }}
         key: ${{ steps.binary-key.outputs.key }}
     - name: Build Rust binary on cache miss
       if: steps.binary.outputs.cache-hit != 'true'
