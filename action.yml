@@ -13,6 +13,9 @@ inputs:
   match:
     description: Substring in release tags (empty matches all)
     default: nightly
+  tag:
+    description: Exact published release tag (overrides releases and match)
+    default: ''
   metric:
     description: author, merger, or changes (added + deleted lines by author)
     default: author
@@ -78,12 +81,17 @@ runs:
         RB_REPOSITORY: ${{ inputs.repository }}
         RB_RELEASES: ${{ inputs.releases }}
         RB_MATCH: ${{ inputs.match }}
+        RB_TAG: ${{ inputs.tag }}
         RB_METRIC: ${{ inputs.metric }}
         RB_USERS: ${{ inputs.users }}
         RB_FORMAT: ${{ inputs.format }}
         RB_ASSET_BASE: ${{ inputs.asset-base-url }}
         RB_OUTPUT: ${{ inputs.output }}
       run: |
-        "$GITHUB_ACTION_PATH/target/release/release-balls" \
+        tag_args=()
+        if [[ -n "$RB_TAG" ]]; then
+          tag_args=(--tag "$RB_TAG")
+        fi
+        "$GITHUB_ACTION_PATH/target/release/release-balls" "${tag_args[@]}" \
           --repo "$RB_REPOSITORY" --releases "$RB_RELEASES" --match "$RB_MATCH" \
           --metric "$RB_METRIC" --users "$RB_USERS" --format "$RB_FORMAT" --out "$RB_OUTPUT" --asset-base-url "$RB_ASSET_BASE"

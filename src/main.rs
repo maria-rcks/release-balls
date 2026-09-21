@@ -22,6 +22,9 @@ struct Args {
     releases: usize,
     #[arg(long = "match", default_value = "nightly")]
     pattern: String,
+    /// Exact published release tag; overrides --releases and --match.
+    #[arg(long, conflicts_with = "data", value_parser = clap::builder::NonEmptyStringValueParser::new())]
+    tag: Option<String>,
     #[arg(long, default_value = "author", value_parser = ["author", "merger", "changes"])]
     metric: String,
     #[arg(long, default_value = "")]
@@ -144,7 +147,12 @@ fn main() -> Result<()> {
     let value = if let Some(path) = &args.data {
         serde_json::from_slice(&fs::read(path)?)?
     } else {
-        data::collect(&args.repo, args.releases, &args.pattern)?
+        data::collect(
+            &args.repo,
+            args.releases,
+            &args.pattern,
+            args.tag.as_deref(),
+        )?
     };
     let snapshot: Snapshot =
         serde_json::from_value(value.clone()).context("invalid source snapshot")?;
