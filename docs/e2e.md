@@ -36,3 +36,9 @@ independently fetched the selected release bodies and 110 referenced prs across 
 ## limits
 
 these runs exercise github actions on ubuntu, not other ci providers. the private-source case has an explicitly empty release; nonempty private pr metadata was not exercised. authenticated release downloads worked; private release-asset gifs may not load through github's public image proxy. use public hosting for a reliably embedded gif. cold builds and github's per-ref cache scope are separate from subsecond render timings.
+
+## Triggering-release defaults
+
+Action `fa8d4eb` was verified on actual `release.published` events with neither `tag` nor `metric` supplied. The [private-source run](https://github.com/maria-rcks/release-balls-e2e-nightly/actions/runs/35551165794) selected `e2e/current#authors`. The [t3code run](https://github.com/maria-rcks/release-balls-e2e-release/actions/runs/35551166287) selected only `v0.0.43-nightly.20260920.2031` and ranked its PR authors: flamboh 3, maria-rcks 3, Mnigos 2. Both uploaded GIF/MP4 assets and added one media section while preserving existing notes.
+
+Blacksmith checked the author rankings against independent GitHub PR responses, decoded both formats, and compared downloaded assets byte for byte. The publishing step was also exercised against the sandbox release with only a GIF present and only an MP4 present. The README now uses the automatic publishing workflow; the multi-release artifact workflow remains an explicit alternative.

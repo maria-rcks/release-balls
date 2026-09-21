@@ -4,7 +4,7 @@ copy [examples/release.yml](../examples/release.yml) to `.github/workflows/relea
 
 publish a release with github-generated notes or full merged pr links. the example url-encodes the tag for asset links, including tags containing `/` or `#`. the workflow:
 
-1. renders that exact release using `tag: ${{ github.event.release.tag_name }}`.
+1. Renders PR authors in the triggering release. The action defaults to its exact tag and the `author` metric.
 2. attaches its gif and mp4 as release assets.
 3. adds the linked gif and video download to the existing notes.
 4. saves the source data and rankings as an actions artifact.
@@ -13,7 +13,7 @@ github scopes caches by ref. a new release tag may need a cold build unless a ru
 
 rerunning the job replaces the same assets and its marked section of the notes. your original notes stay intact. `contents: write` permits publication; `pull-requests: read` permits reading private pr details. the action itself only renders files.
 
-`tag` is an exact, case-sensitive selection and overrides `releases` and `match`. use it for release events and backfills. `match` is a substring search for groups such as `nightly`; `match: 0.12.1` could also select `0.12.17`.
+`tag` defaults to `${{ github.event.release.tag_name }}` on release events. It is an exact, case-sensitive selection and overrides `releases` and `match`. For backfills, set it explicitly. To aggregate multiple releases during a release event, set `tag: ''` and choose `releases` and `match`. Outside release events, an unset tag selects the latest published release (one release, no tag filter). `match` is a substring search for groups such as `nightly`; `match: 0.12.1` could also select `0.12.17`.
 
 if another workflow creates your release using its default `GITHUB_TOKEN`, github will not start a second workflow for the resulting release event. put the render/upload steps directly after `gh release create` in that workflow, or publish using an appropriately scoped github app token. a release published through the website or a user token triggers this example normally.
 

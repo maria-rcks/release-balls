@@ -1,16 +1,16 @@
 # Release Balls
 
-Turn GitHub releases into animated contributor leaderboards. Generate a GIF or MP4 showing who authored the most merged PRs, merged the most PRs, or changed the most lines.
+Generate a GIF and video of the top PR authors in the release that triggered your workflow.
 
-![Contributors across five real t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/5df8a3aa-cd24-48d7-b2d7-766845f75a4f/summary-merger.gif)
+![PR authors in a real t3code release](https://uploads-production-47e4.up.railway.app/files/da58ecc0-64b1-4301-831d-6246121d0879/summary-author.gif)
 
-*Example: merge counts across five [t3code nightlies](demo/data.json).*
+*Example: PR authors in a [t3code nightly release](https://github.com/pingdotgg/t3code/releases/tag/v0.0.43-nightly.20260920.2031).*
 
 ## Quick start
 
-Copy [this workflow](examples/artifacts.yml) to `.github/workflows/release-balls.yml`. Run **Actions → Release Balls → Run workflow**, then download **release-media** from the finished run.
+Copy [this workflow](examples/release.yml) to `.github/workflows/release-balls.yml`, then publish a release. It uploads a GIF and MP4 and adds the GIF and video link to the existing release notes.
 
-Change `repository`, `releases`, and `match` to choose your releases. Pick your output:
+Want a different ranking or format?
 
 - `metric`: `author`, `merger`, or `changes` (added + deleted lines).
 - `format`: `gif`, `mp4`, or `both`.
@@ -19,4 +19,4 @@ Counts come from merged PR links in release notes. GitHub-generated release note
 
 The action is currently private. [Set up access](docs/releases.md#private-action-access) before using it in another repository.
 
-[Publish to release notes](docs/releases.md) · [All inputs](action.yml) · [Benchmarks](docs/performance.md)
+[Release setup](docs/releases.md) · [Manual runs](examples/artifacts.yml) · [All inputs](action.yml) · [Benchmarks](docs/performance.md)

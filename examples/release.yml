@@ -18,11 +18,9 @@ jobs:
         run: |
           encoded_tag=$(jq -rn --arg tag "$RELEASE_TAG" '$tag | @uri')
           echo "url=https://github.com/$GITHUB_REPOSITORY/releases/download/$encoded_tag" >> "$GITHUB_OUTPUT"
-      - uses: maria-rcks/release-balls@efb1c937455874a887b83c0dc6cea9d9c37a28e8
+      - uses: maria-rcks/release-balls@fa8d4eb9652bbf944b6bea767666b312da7ffb40
         id: balls
         with:
-          tag: ${{ github.event.release.tag_name }}
-          metric: author
           format: both
           asset-base-url: ${{ steps.assets.outputs.url }}
       - name: Attach media and update release notes
@@ -34,7 +32,9 @@ jobs:
           MARKDOWN: ${{ steps.balls.outputs.markdown }}
         shell: bash
         run: |
-          gh release upload "$RELEASE_TAG" "$MEDIA_DIR"/*.gif "$MEDIA_DIR"/*.mp4 --clobber
+          shopt -s nullglob
+          media=("$MEDIA_DIR"/*.gif "$MEDIA_DIR"/*.mp4)
+          gh release upload "$RELEASE_TAG" "${media[@]}" --clobber
           gh release view "$RELEASE_TAG" --json body --jq .body > "$RUNNER_TEMP/notes.md"
           awk '
             /^<!-- release-balls:start -->$/ { skip=1; next }
