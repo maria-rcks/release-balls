@@ -244,7 +244,7 @@ fn numbers(repo: &str, release: &Value) -> Result<Vec<u64>> {
 }
 
 /// Scan every release page, then select the newest publication dates.
-pub fn collect(repo: &str, count: usize, pattern: &str) -> Result<Value> {
+pub fn collect(repo: &str, count: usize, pattern: &str, tag: Option<&str>) -> Result<Value> {
     if !Regex::new(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")?.is_match(repo) {
         bail!("repo must be owner/repository");
     }
@@ -259,52 +259,66 @@ pub fn collect(repo: &str, count: usize, pattern: &str) -> Result<Value> {
             .build()?,
         token: token(),
     };
-    let prefix = format!("/repos/{repo}/releases?per_page=100&page=");
-    let (first, mut link) = api.get(&format!("{prefix}1"), None)?;
-    let mut releases = array(first)?;
-    let last_pattern = Regex::new(r#"<([^>]+)>;\s*rel="last""#)?;
-    if let Some(last) = last_pattern.captures(&link) {
-        let url = reqwest::Url::parse(&last[1])?;
-        let last_page = url
-            .query_pairs()
-            .find(|(key, _)| key == "page")
-            .context("Missing last release page")?
-            .1
-            .parse::<usize>()?;
-        let pages: Vec<_> = (2..=last_page).collect();
-        for batch in parallel(&pages, |page| {
-            array(api.get(&format!("{prefix}{page}"), None)?.0)
-        })? {
-            releases.extend(batch);
-        }
-    } else if link.contains("rel=\"next\"") {
-        let mut page = 2;
-        loop {
-            let (batch, next) = api.get(&format!("{prefix}{page}"), None)?;
-            releases.extend(array(batch)?);
-            link = next;
-            if !link.contains("rel=\"next\"") {
-                break;
+    let mut releases = if let Some(tag) = tag {
+        let encoded = url::form_urlencoded::byte_serialize(tag.as_bytes())
+            .collect::<String>()
+            .replace('+', "%20");
+        vec![
+            api.get(&format!("/repos/{repo}/releases/tags/{encoded}"), None)?
+                .0,
+        ]
+    } else {
+        let prefix = format!("/repos/{repo}/releases?per_page=100&page=");
+        let (first, mut link) = api.get(&format!("{prefix}1"), None)?;
+        let mut releases = array(first)?;
+        let last_pattern = Regex::new(r#"<([^>]+)>;\s*rel="last""#)?;
+        if let Some(last) = last_pattern.captures(&link) {
+            let url = reqwest::Url::parse(&last[1])?;
+            let last_page = url
+                .query_pairs()
+                .find(|(key, _)| key == "page")
+                .context("Missing last release page")?
+                .1
+                .parse::<usize>()?;
+            let pages: Vec<_> = (2..=last_page).collect();
+            for batch in parallel(&pages, |page| {
+                array(api.get(&format!("{prefix}{page}"), None)?.0)
+            })? {
+                releases.extend(batch);
             }
-            page += 1;
+        } else if link.contains("rel=\"next\"") {
+            let mut page = 2;
+            loop {
+                let (batch, next) = api.get(&format!("{prefix}{page}"), None)?;
+                releases.extend(array(batch)?);
+                link = next;
+                if !link.contains("rel=\"next\"") {
+                    break;
+                }
+                page += 1;
+            }
         }
-    }
+        releases
+    };
+    let count = if tag.is_some() { 1 } else { count };
     let pattern_lower = pattern.to_lowercase();
     releases.retain(|item| {
         item["draft"] == false
             && item["published_at"].is_string()
-            && item["tag_name"]
-                .as_str()
-                .unwrap_or("")
-                .to_lowercase()
-                .contains(&pattern_lower)
+            && (tag.is_some()
+                || item["tag_name"]
+                    .as_str()
+                    .unwrap_or("")
+                    .to_lowercase()
+                    .contains(&pattern_lower))
     });
     releases.sort_by(|a, b| b["published_at"].as_str().cmp(&a["published_at"].as_str()));
     releases.truncate(count);
     if releases.len() < count {
         bail!(
-            "Found only {} published releases matching {pattern:?}; need {count}",
-            releases.len()
+            "Found only {} published releases matching {:?}; need {count}",
+            releases.len(),
+            tag.unwrap_or(pattern)
         );
     }
     let membership = releases
