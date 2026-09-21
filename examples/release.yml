@@ -12,13 +12,19 @@ jobs:
   video:
     runs-on: ubuntu-latest
     steps:
+      - id: assets
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          encoded_tag=$(jq -rn --arg tag "$RELEASE_TAG" '$tag | @uri')
+          echo "url=https://github.com/$GITHUB_REPOSITORY/releases/download/$encoded_tag" >> "$GITHUB_OUTPUT"
       - uses: maria-rcks/release-balls@efb1c937455874a887b83c0dc6cea9d9c37a28e8
         id: balls
         with:
           tag: ${{ github.event.release.tag_name }}
           metric: author
           format: both
-          asset-base-url: https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}
+          asset-base-url: ${{ steps.assets.outputs.url }}
       - name: Attach media and update release notes
         env:
           GH_TOKEN: ${{ github.token }}

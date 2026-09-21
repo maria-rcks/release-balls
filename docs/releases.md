@@ -2,7 +2,7 @@
 
 copy [examples/release.yml](../examples/release.yml) to `.github/workflows/release-balls.yml` in your repository. see the [private action access requirement](../README.md#try-it-in-github-actions) first.
 
-publish a release with github-generated notes or full merged pr links. the workflow:
+publish a release with github-generated notes or full merged pr links. the example url-encodes the tag for asset links, including tags containing `/` or `#`. the workflow:
 
 1. renders that exact release using `tag: ${{ github.event.release.tag_name }}`.
 2. attaches its gif and mp4 as release assets.
@@ -21,6 +21,6 @@ for private repositories, assets require authentication. the download links work
 
 ## pass files to another job
 
-upload `${{ steps.balls.outputs.directory }}` with `actions/upload-artifact@v4`, then download that artifact in the next job with `actions/download-artifact@v4`. action outputs are paths on the current runner, so passing a path alone to a different job will not transfer the files. after downloading, open `manifest.json`, `data.json`, and `embed.md` relative to the download directory. the absolute file paths inside the manifest refer to the original render job.
+upload `${{ steps.balls.outputs.directory }}` with `actions/upload-artifact@v4`, then download that artifact in the next job with `actions/download-artifact@v4`. action outputs are paths on the current runner, so passing a path alone to a different job will not transfer the files. after downloading, open `manifest.json`, `data.json`, and `embed.md` relative to the download directory. the file paths inside the manifest refer to the original render job.
 
 [real workflow runs and results](e2e.md)

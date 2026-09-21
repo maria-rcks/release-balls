@@ -172,5 +172,13 @@
   ],
   "decoded_unique_media": 9,
   "downstream_identical": true,
-  "release_assets_identical": true
+  "release_assets_identical": true,
+  "encoded_tag_publication": {
+    "tag": "e2e/v1#hotfix",
+    "run": "https://github.com/maria-rcks/release-balls-e2e-nightly/actions/runs/35549576248",
+    "default_private_source": true,
+    "encoded_asset_paths_match_github": true,
+    "downloaded_asset_bytes_identical": true,
+    "fully_decoded_media": 2
+  }
 }
