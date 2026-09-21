@@ -1,8 +1,8 @@
 # Release Balls
 
-Generate a GIF and video of the top PR authors in the release that triggered your workflow.
+Generate a GIF and video of the PR authors in the release that triggered your workflow.
 
-![PR authors in a real t3code release](https://uploads-production-47e4.up.railway.app/files/da58ecc0-64b1-4301-831d-6246121d0879/summary-author.gif)
+![PR authors in a real t3code release](https://uploads-production-47e4.up.railway.app/files/5456f31e-5c8d-453d-a4bd-f2ed21d3fe7f/summary-author.gif)
 
 *Example: PR authors in a [t3code nightly release](https://github.com/pingdotgg/t3code/releases/tag/v0.0.43-nightly.20260920.2031).*
 
@@ -15,7 +15,7 @@ Want a different ranking or format?
 - `metric`: `author`, `merger`, or `changes` (added + deleted lines).
 - `format`: `gif`, `mp4`, or `both`.
 
-Counts come from merged PR links in release notes. GitHub-generated release notes work.
+Every matching contributor is included. Larger releases cycle through pages without shrinking the text. Counts come from merged PR links in release notes; GitHub-generated notes work.
 
 The action is currently private. [Set up access](docs/releases.md#private-action-access) before using it in another repository.
 

@@ -4,10 +4,12 @@ copy [examples/release.yml](../examples/release.yml) to `.github/workflows/relea
 
 publish a release with github-generated notes or full merged pr links. the example url-encodes the tag for asset links, including tags containing `/` or `#`. the workflow:
 
-1. Renders PR authors in the triggering release. The action defaults to its exact tag and the `author` metric.
+1. Renders all matching PR authors in the triggering release. The action defaults to its exact tag and the `author` metric.
 2. attaches its gif and mp4 as release assets.
 3. adds the linked gif and video download to the existing notes.
 4. saves the source data and rankings as an actions artifact.
+
+Up to eight contributors appear per page, with the same text size throughout. Longer rankings cycle through every page, allowing at least four seconds per page. The CLI only limits contributors when you pass `--top N`; bots are excluded unless you pass `--include-bots`.
 
 github scopes caches by ref. a new release tag may need a cold build unless a run on the default branch has already cached the same action binary. reruns on the same tag can reuse its cache.
 
