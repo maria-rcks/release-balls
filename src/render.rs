@@ -321,8 +321,10 @@ fn artwork(
     let left = rounded((70.0 + label_width + 24.0 + 76.0).max(350.0) * f64::from(width) / 1080.0);
     let row_height = if rows.len() <= 3 {
         250.0
-    } else {
+    } else if rows.len() <= 6 {
         500.0 / (rows.len() - 1) as f64
+    } else {
+        700.0 / (rows.len() - 1) as f64
     };
     let client = Client::builder()
         .user_agent("release-balls")
@@ -665,9 +667,8 @@ pub fn render(
         || options.fps == 0
         || !options.duration.is_finite()
         || options.duration <= 0.0
-        || rows.len() > 6
     {
-        bail!("invalid render dimensions, timing, or row count");
+        bail!("invalid render dimensions or timing");
     }
     if formats.is_empty()
         || formats
@@ -680,17 +681,32 @@ pub fn render(
     if yuv && !options.width.is_multiple_of(2) {
         bail!("YUV420 requires an even width");
     }
-    let (background, sprites, left) = artwork(repo, subtitle, rows, metric, options.width)?;
-    let yuv_sprites: Vec<_> = if yuv {
-        sprites.iter().map(YuvSprite::new).collect()
-    } else {
-        Vec::new()
+    // Keep only one page's artwork in memory. Every contributor appears; text
+    // sizes stay fixed and speeds use the maximum across the entire ranking.
+    const ROWS_PER_PAGE: usize = 8;
+    let page_count = rows.len().max(1).div_ceil(ROWS_PER_PAGE);
+    let prepare_page = |page: usize| -> Result<_> {
+        let start = page * ROWS_PER_PAGE;
+        let end = (start + ROWS_PER_PAGE).min(rows.len());
+        let (background, sprites, mut left) =
+            artwork(repo, subtitle, &rows[start..end], metric, options.width)?;
+        if page_count > 1 {
+            // Reserve the maximum label width so every page has the same track.
+            left = rounded(530.0 * f64::from(options.width) / 1080.0);
+        }
+        let yuv_sprites: Vec<_> = if yuv {
+            sprites.iter().map(YuvSprite::new).collect()
+        } else {
+            Vec::new()
+        };
+        let background = if yuv {
+            yuv_background(&background, options.width as usize)
+        } else {
+            background
+        };
+        Ok((background, sprites, left, yuv_sprites))
     };
-    let background = if yuv {
-        yuv_background(&background, options.width as usize)
-    } else {
-        background
-    };
+    let (mut background, mut sprites, mut left, mut yuv_sprites) = prepare_page(0)?;
     let mut command = Command::new("ffmpeg");
     command
         .args([
@@ -766,16 +782,38 @@ pub fn render(
     });
     let mut canvas = background.clone();
     let mut previous = Vec::with_capacity(sprites.len());
-    let span = rounded(f64::from(options.width) * 980.0 / 1080.0) - left;
+    let mut span = rounded(f64::from(options.width) * 980.0 / 1080.0) - left;
     let maximum = rows
         .iter()
         .map(|(_, count)| *count)
         .max()
         .unwrap_or(0)
         .max(1);
-    let frames = rounded(f64::from(options.fps) * options.duration).max(1);
-    let mut write_result = Ok(());
+    let duration = if page_count > 1 {
+        options.duration.max(page_count as f64 * 4.0)
+    } else {
+        options.duration
+    };
+    let frames = rounded(f64::from(options.fps) * duration).max(1);
+    let mut write_result: Result<()> = Ok(());
+    let mut current_page = 0;
+    let mut page_start = 0;
     for frame in 0..frames {
+        let page = frame as usize * page_count / frames as usize;
+        if page != current_page {
+            match prepare_page(page) {
+                Ok(artwork) => (background, sprites, left, yuv_sprites) = artwork,
+                Err(error) => {
+                    write_result = Err(error);
+                    break;
+                }
+            }
+            canvas.copy_from_slice(&background);
+            previous.clear();
+            span = rounded(f64::from(options.width) * 980.0 / 1080.0) - left;
+            current_page = page;
+            page_start = frame;
+        }
         if options.strategy == "cached" {
             canvas.copy_from_slice(&background);
         } else {
@@ -805,9 +843,10 @@ pub fn render(
         }
         previous.clear();
         for (index, sprite) in sprites.iter().enumerate() {
-            let distance =
-                f64::from(span) * (sprite.count as f64 / maximum as f64) * f64::from(frame)
-                    / f64::from(options.fps);
+            let distance = f64::from(span)
+                * (sprite.count as f64 / maximum as f64)
+                * f64::from(frame - page_start)
+                / f64::from(options.fps);
             let phase = distance % f64::from(2 * span);
             let x = left
                 + rounded(if phase <= f64::from(span) {
@@ -841,7 +880,7 @@ pub fn render(
             previous.push((x, y, sprite.diameter));
         }
         if let Err(error) = stdin.write_all(&canvas) {
-            write_result = Err(error);
+            write_result = Err(error.into());
             break;
         }
     }

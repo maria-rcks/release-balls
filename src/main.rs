@@ -31,8 +31,9 @@ struct Args {
     users: String,
     #[arg(long)]
     include_bots: bool,
-    #[arg(long, default_value_t = 3)]
-    top: usize,
+    /// Optional contributor limit. By default, include every matching contributor.
+    #[arg(long, value_parser = clap::value_parser!(u32).range(1..))]
+    top: Option<u32>,
     #[arg(long, default_value = "mp4", value_parser = ["mp4", "gif", "both"])]
     format: String,
     #[arg(long)]
@@ -47,6 +48,7 @@ struct Args {
     width: u32,
     #[arg(long, default_value_t = 60)]
     fps: u32,
+    /// Minimum clip length; multi-page clips allow at least four seconds per page.
     #[arg(long, default_value_t = 16.0)]
     duration: f64,
     #[arg(long, default_value = "ultrafast", value_parser = ["ultrafast", "superfast", "veryfast"])]
@@ -123,7 +125,9 @@ fn ranking(releases: &[Release], args: &Args) -> Result<Vec<(String, u64)>> {
             .then_with(|| a.0.to_lowercase().cmp(&b.0.to_lowercase()))
             .then_with(|| a.0.cmp(&b.0))
     });
-    rows.truncate(args.top);
+    if let Some(top) = args.top {
+        rows.truncate(top as usize);
+    }
     Ok(rows)
 }
 
@@ -135,13 +139,12 @@ fn write_json(path: &Path, value: &Value) -> Result<()> {
 fn main() -> Result<()> {
     let args = Args::parse();
     if !(1..=100).contains(&args.releases)
-        || !(1..=6).contains(&args.top)
         || !(320..=2160).contains(&args.width)
         || args.width % 2 != 0
         || !(1..=60).contains(&args.fps)
         || !(0.1..=60.0).contains(&args.duration)
     {
-        bail!("use 1–100 releases, 1–6 rows, even width 320–2160, fps 1–60, duration 0.1–60");
+        bail!("use 1–100 releases, even width 320–2160, fps 1–60, duration 0.1–60");
     }
     let start = Instant::now();
     let value = if let Some(path) = &args.data {
