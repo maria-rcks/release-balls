@@ -1,0 +1,1197 @@
+{
+  "description": "Rust YUV encoder thread trial; same Python two-thread baseline, sequential matrices on the same dedicated worker",
+  "trials": [
+    {
+      "measured_at": "2026-09-20T23:37:53.760909+00:00",
+      "method": "alternating Python/Rust order; subprocess startup included; shared warm avatars; no installation, API collection, or probing in timings",
+      "environment": {
+        "platform": "Linux-6.6.141-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "cpu_count": 4,
+        "available_cpus": 4,
+        "python": "3.12.3 (main, Jan  8 2026, 11:30:50) [GCC 13.3.0]",
+        "pillow": "12.3.0",
+        "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+        "ffprobe": "ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers",
+        "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)"
+      },
+      "source": {
+        "head": "4c29752381302144a14505e7060f78aa776c2309",
+        "sha256": {
+          "release_balls.py": "d75c42adbcd03ce3469ee85fef0d6db538f0ed0a0c9939a499e28243f4562689",
+          "data.py": "6c64034066ed87bb7706ec003a8d68f0b4714871d0a7d65ca55d8eb4a6a26952",
+          "Cargo.toml": "dde4879d9a75922bbf481cd288930ed825bbd4e7c95bf017736a6ce7d959742f",
+          "Cargo.lock": "ec77cfc76a7e547556be7376c09fac7a4dc605317125b62dc987f6212f830a4a",
+          "benchmarks/rust_bench.py": "daa11c61325dce99859433d5e8fcbb25e88f47feb8ddfe8d3666510db8a206a6",
+          "src/data.rs": "988aa92f9eb6875d4ae0cf29f7df4d97756f5e8d23076a98e71a2a0849d4c87b",
+          "src/main.rs": "fc929409d74b1626b85e443ba3fb0b88256fa24020363875879bed0d8c501702",
+          "src/render.rs": "c59bf55a3145f1542ac0f9f1617267c04a97741a2e7b418b779f2197b9be06f7"
+        },
+        "binary": "/home/runner/_work/maria-blacksmith/maria-blacksmith-source/target/release/release-balls",
+        "binary_sha256": "14bbcc073683a958c23a4c8702b1516522c9b7647b240c859db85930fd03a3b4",
+        "data": "/home/runner/_work/maria-blacksmith/maria-blacksmith-source/demo/data.json",
+        "data_sha256": "a6859435661e441f63b19880516168bcea42af3dc64dbffa8f2aa22498e5993d",
+        "avatars_sha256": {
+          "juliusmarminge.png": "6c80b8cca94c87d3078e58ccdcf88a396f01693df9ebb6e75186c3deabaa743b",
+          "shivamhwp.png": "1cc9c99a60a0dc0b9ad2cb4c1cc5caafd3c08e32f8532f16cd60e7de41b723e5",
+          "maria-rcks.png": "21389344f000b7f7dcf7d192d0342f938c1c0bccb8883f87ece31cc06e4d4823"
+        }
+      },
+      "repo": "pingdotgg/t3code",
+      "release_tags": [
+        "v0.0.43-nightly.20260920.2018",
+        "v0.0.43-nightly.20260920.2005",
+        "v0.0.43-nightly.20260920.1990",
+        "v0.0.43-nightly.20260919.1978",
+        "v0.0.43-nightly.20260919.1962"
+      ],
+      "metric": "merger",
+      "top": 3,
+      "ranking": [
+        [
+          "juliusmarminge",
+          11
+        ],
+        [
+          "shivamhwp",
+          5
+        ],
+        [
+          "maria-rcks",
+          3
+        ]
+      ],
+      "runs": 3,
+      "rust_threads": 1,
+      "probe": true,
+      "completed": true,
+      "results": [
+        {
+          "width": 720,
+          "fps": 30,
+          "duration": 6.0,
+          "format": "mp4",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "python",
+              "seconds": 0.21126455400008126,
+              "bytes": {
+                "mp4": 86347
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 0.14710386900014782,
+              "bytes": {
+                "mp4": 86218
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 0.14728211300007388,
+              "bytes": {
+                "mp4": 86218
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "python",
+              "seconds": 0.21443002700016223,
+              "bytes": {
+                "mp4": 86347
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "python",
+              "seconds": 0.24071573000014723,
+              "bytes": {
+                "mp4": 86347
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 0.14964155300003767,
+              "bytes": {
+                "mp4": 86218
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 0.21443002700016223,
+            "rust": 0.14728211300007388
+          },
+          "rust_minus_python_seconds": -0.06714791400008835,
+          "rust_minus_python_percent": -31.314604087625074,
+          "python_over_rust_speedup": 1.4559135704418815
+        },
+        {
+          "width": 720,
+          "fps": 30,
+          "duration": 6.0,
+          "format": "both",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 0.17348892999984855,
+              "bytes": {
+                "mp4": 86218,
+                "gif": 946134
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "python",
+              "seconds": 0.5074605960001008,
+              "bytes": {
+                "mp4": 86347,
+                "gif": 933022
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "python",
+              "seconds": 0.5073978569998872,
+              "bytes": {
+                "mp4": 86347,
+                "gif": 933022
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 0.16574497199985672,
+              "bytes": {
+                "mp4": 86218,
+                "gif": 946134
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 0.16805208400000993,
+              "bytes": {
+                "mp4": 86218,
+                "gif": 946134
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "python",
+              "seconds": 0.5166628400002082,
+              "bytes": {
+                "mp4": 86347,
+                "gif": 933022
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 0.5074605960001008,
+            "rust": 0.16805208400000993
+          },
+          "rust_minus_python_seconds": -0.3394085120000909,
+          "rust_minus_python_percent": -66.88371760790339,
+          "python_over_rust_speedup": 3.0196626184062727
+        },
+        {
+          "width": 1080,
+          "fps": 60,
+          "duration": 16.0,
+          "format": "mp4",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "python",
+              "seconds": 1.933036981999976,
+              "bytes": {
+                "mp4": 561818
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 1.0778268890001073,
+              "bytes": {
+                "mp4": 565755
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 1.0770252340000752,
+              "bytes": {
+                "mp4": 565755
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "python",
+              "seconds": 1.4781062380000094,
+              "bytes": {
+                "mp4": 561818
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "python",
+              "seconds": 1.4944763799999237,
+              "bytes": {
+                "mp4": 561818
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 1.1291103149999344,
+              "bytes": {
+                "mp4": 565755
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 1.4944763799999237,
+            "rust": 1.0778268890001073
+          },
+          "rust_minus_python_seconds": -0.4166494909998164,
+          "rust_minus_python_percent": -27.879295823988713,
+          "python_over_rust_speedup": 1.386564387335279
+        },
+        {
+          "width": 1080,
+          "fps": 60,
+          "duration": 16.0,
+          "format": "both",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 1.082206264999968,
+              "bytes": {
+                "mp4": 565755,
+                "gif": 2487363
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "python",
+              "seconds": 3.106605524000088,
+              "bytes": {
+                "mp4": 561818,
+                "gif": 2464866
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "python",
+              "seconds": 3.03719888899991,
+              "bytes": {
+                "mp4": 561818,
+                "gif": 2464866
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 1.1169087800001307,
+              "bytes": {
+                "mp4": 565755,
+                "gif": 2487363
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 1.1078019340000083,
+              "bytes": {
+                "mp4": 565755,
+                "gif": 2487363
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "python",
+              "seconds": 3.0906336610000835,
+              "bytes": {
+                "mp4": 561818,
+                "gif": 2464866
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 3.0906336610000835,
+            "rust": 1.1078019340000083
+          },
+          "rust_minus_python_seconds": -1.9828317270000753,
+          "rust_minus_python_percent": -64.15615516070126,
+          "python_over_rust_speedup": 2.789879279087863
+        }
+      ]
+    },
+    {
+      "measured_at": "2026-09-20T23:38:21.228423+00:00",
+      "method": "alternating Python/Rust order; subprocess startup included; shared warm avatars; no installation, API collection, or probing in timings",
+      "environment": {
+        "platform": "Linux-6.6.141-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "cpu_count": 4,
+        "available_cpus": 4,
+        "python": "3.12.3 (main, Jan  8 2026, 11:30:50) [GCC 13.3.0]",
+        "pillow": "12.3.0",
+        "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+        "ffprobe": "ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers",
+        "rustc": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+        "cargo": "cargo 1.92.0 (344c4567c 2025-10-21)"
+      },
+      "source": {
+        "head": "4c29752381302144a14505e7060f78aa776c2309",
+        "sha256": {
+          "release_balls.py": "d75c42adbcd03ce3469ee85fef0d6db538f0ed0a0c9939a499e28243f4562689",
+          "data.py": "6c64034066ed87bb7706ec003a8d68f0b4714871d0a7d65ca55d8eb4a6a26952",
+          "Cargo.toml": "dde4879d9a75922bbf481cd288930ed825bbd4e7c95bf017736a6ce7d959742f",
+          "Cargo.lock": "ec77cfc76a7e547556be7376c09fac7a4dc605317125b62dc987f6212f830a4a",
+          "benchmarks/rust_bench.py": "daa11c61325dce99859433d5e8fcbb25e88f47feb8ddfe8d3666510db8a206a6",
+          "src/data.rs": "988aa92f9eb6875d4ae0cf29f7df4d97756f5e8d23076a98e71a2a0849d4c87b",
+          "src/main.rs": "fc929409d74b1626b85e443ba3fb0b88256fa24020363875879bed0d8c501702",
+          "src/render.rs": "c59bf55a3145f1542ac0f9f1617267c04a97741a2e7b418b779f2197b9be06f7"
+        },
+        "binary": "/home/runner/_work/maria-blacksmith/maria-blacksmith-source/target/release/release-balls",
+        "binary_sha256": "14bbcc073683a958c23a4c8702b1516522c9b7647b240c859db85930fd03a3b4",
+        "data": "/home/runner/_work/maria-blacksmith/maria-blacksmith-source/demo/data.json",
+        "data_sha256": "a6859435661e441f63b19880516168bcea42af3dc64dbffa8f2aa22498e5993d",
+        "avatars_sha256": {
+          "juliusmarminge.png": "6c80b8cca94c87d3078e58ccdcf88a396f01693df9ebb6e75186c3deabaa743b",
+          "shivamhwp.png": "1cc9c99a60a0dc0b9ad2cb4c1cc5caafd3c08e32f8532f16cd60e7de41b723e5",
+          "maria-rcks.png": "21389344f000b7f7dcf7d192d0342f938c1c0bccb8883f87ece31cc06e4d4823"
+        }
+      },
+      "repo": "pingdotgg/t3code",
+      "release_tags": [
+        "v0.0.43-nightly.20260920.2018",
+        "v0.0.43-nightly.20260920.2005",
+        "v0.0.43-nightly.20260920.1990",
+        "v0.0.43-nightly.20260919.1978",
+        "v0.0.43-nightly.20260919.1962"
+      ],
+      "metric": "merger",
+      "top": 3,
+      "ranking": [
+        [
+          "juliusmarminge",
+          11
+        ],
+        [
+          "shivamhwp",
+          5
+        ],
+        [
+          "maria-rcks",
+          3
+        ]
+      ],
+      "runs": 3,
+      "rust_threads": 4,
+      "probe": true,
+      "completed": true,
+      "results": [
+        {
+          "width": 720,
+          "fps": 30,
+          "duration": 6.0,
+          "format": "mp4",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "python",
+              "seconds": 0.23270163000006505,
+              "bytes": {
+                "mp4": 86347
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 0.13606233399991652,
+              "bytes": {
+                "mp4": 86218
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 0.13805661700007477,
+              "bytes": {
+                "mp4": 86218
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "python",
+              "seconds": 0.23520241399978659,
+              "bytes": {
+                "mp4": 86347
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "python",
+              "seconds": 0.2417143689999648,
+              "bytes": {
+                "mp4": 86347
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 0.1401898810001967,
+              "bytes": {
+                "mp4": 86218
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 0.23520241399978659,
+            "rust": 0.13805661700007477
+          },
+          "rust_minus_python_seconds": -0.09714579699971182,
+          "rust_minus_python_percent": -41.30306120063886,
+          "python_over_rust_speedup": 1.7036663588508707
+        },
+        {
+          "width": 720,
+          "fps": 30,
+          "duration": 6.0,
+          "format": "both",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 0.18495603899987145,
+              "bytes": {
+                "mp4": 86218,
+                "gif": 946134
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "python",
+              "seconds": 0.5312368560000778,
+              "bytes": {
+                "mp4": 86347,
+                "gif": 933022
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "python",
+              "seconds": 0.5229277270000239,
+              "bytes": {
+                "mp4": 86347,
+                "gif": 933022
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 0.17541354499985573,
+              "bytes": {
+                "mp4": 86218,
+                "gif": 946134
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 0.17369838499985235,
+              "bytes": {
+                "mp4": 86218,
+                "gif": 946134
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "python",
+              "seconds": 0.510180427000023,
+              "bytes": {
+                "mp4": 86347,
+                "gif": 933022
+              },
+              "streams": {
+                "mp4": {
+                  "width": 720,
+                  "height": 720,
+                  "nb_read_frames": "180"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "90"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 0.5229277270000239,
+            "rust": 0.17541354499985573
+          },
+          "rust_minus_python_seconds": -0.34751418200016815,
+          "rust_minus_python_percent": -66.45548974689429,
+          "python_over_rust_speedup": 2.9811137275656447
+        },
+        {
+          "width": 1080,
+          "fps": 60,
+          "duration": 16.0,
+          "format": "mp4",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "python",
+              "seconds": 1.387874500999942,
+              "bytes": {
+                "mp4": 561818
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 1.0979015289999552,
+              "bytes": {
+                "mp4": 565755
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 1.1152141000000029,
+              "bytes": {
+                "mp4": 565755
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "python",
+              "seconds": 1.458926965000046,
+              "bytes": {
+                "mp4": 561818
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "python",
+              "seconds": 2.1034076579999237,
+              "bytes": {
+                "mp4": 561818
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 1.0555755319999207,
+              "bytes": {
+                "mp4": 565755
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 1.458926965000046,
+            "rust": 1.0979015289999552
+          },
+          "rust_minus_python_seconds": -0.36102543600009085,
+          "rust_minus_python_percent": -24.74595676556567,
+          "python_over_rust_speedup": 1.3288322554108636
+        },
+        {
+          "width": 1080,
+          "fps": 60,
+          "duration": 16.0,
+          "format": "both",
+          "strategy": "yuv",
+          "python_strategy": "dirty",
+          "preset": "ultrafast",
+          "samples": [
+            {
+              "run": 1,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 1.0952456029999666,
+              "bytes": {
+                "mp4": 565755,
+                "gif": 2487363
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 1,
+              "position": 2,
+              "engine": "python",
+              "seconds": 3.0794460580000305,
+              "bytes": {
+                "mp4": 561818,
+                "gif": 2464866
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 1,
+              "engine": "python",
+              "seconds": 3.059937776000197,
+              "bytes": {
+                "mp4": 561818,
+                "gif": 2464866
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 2,
+              "position": 2,
+              "engine": "rust",
+              "seconds": 1.1172591080000984,
+              "bytes": {
+                "mp4": 565755,
+                "gif": 2487363
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 1,
+              "engine": "rust",
+              "seconds": 1.2076362079999399,
+              "bytes": {
+                "mp4": 565755,
+                "gif": 2487363
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            },
+            {
+              "run": 3,
+              "position": 2,
+              "engine": "python",
+              "seconds": 3.0294078740000714,
+              "bytes": {
+                "mp4": 561818,
+                "gif": 2464866
+              },
+              "streams": {
+                "mp4": {
+                  "width": 1080,
+                  "height": 1080,
+                  "nb_read_frames": "960"
+                },
+                "gif": {
+                  "width": 480,
+                  "height": 480,
+                  "nb_read_frames": "240"
+                }
+              }
+            }
+          ],
+          "median_seconds": {
+            "python": 3.059937776000197,
+            "rust": 1.1172591080000984
+          },
+          "rust_minus_python_seconds": -1.9426786680000987,
+          "rust_minus_python_percent": -63.48752197632837,
+          "python_over_rust_speedup": 2.7387897347084573
+        }
+      ]
+    }
+  ]
+}

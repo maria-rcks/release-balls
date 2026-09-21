@@ -1,0 +1,72 @@
+{
+  "workload": "720p/30fps/6s, real latest 5 nightlies, 6 authors; avatar network excluded",
+  "runs": 3,
+  "results": [
+    {
+      "strategy": "cached",
+      "preset": "ultrafast",
+      "seconds": [
+        0.1970987500000092,
+        0.1951268779999964,
+        0.18557040900000743
+      ],
+      "median_seconds": 0.1951268779999964,
+      "bytes": 74009
+    },
+    {
+      "strategy": "cached",
+      "preset": "superfast",
+      "seconds": [
+        0.23119437300002232,
+        0.23384382200001141,
+        0.22727707000001374
+      ],
+      "median_seconds": 0.23119437300002232,
+      "bytes": 54534
+    },
+    {
+      "strategy": "cached",
+      "preset": "veryfast",
+      "seconds": [
+        0.25730065199999785,
+        0.24702512700000057,
+        0.25108925399999293
+      ],
+      "median_seconds": 0.25108925399999293,
+      "bytes": 42368
+    },
+    {
+      "strategy": "dirty",
+      "preset": "ultrafast",
+      "seconds": [
+        0.15657330999999886,
+        0.18404210799999987,
+        0.1582626619999985
+      ],
+      "median_seconds": 0.1582626619999985,
+      "bytes": 74009
+    },
+    {
+      "strategy": "dirty",
+      "preset": "superfast",
+      "seconds": [
+        0.23101339400000143,
+        0.22560592199999974,
+        0.23140224200000148
+      ],
+      "median_seconds": 0.23101339400000143,
+      "bytes": 54534
+    },
+    {
+      "strategy": "dirty",
+      "preset": "veryfast",
+      "seconds": [
+        0.2548384429999828,
+        0.25526658399999747,
+        0.25443046799998115
+      ],
+      "median_seconds": 0.2548384429999828,
+      "bytes": 42368
+    }
+  ]
+}

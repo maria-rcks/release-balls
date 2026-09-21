@@ -14,6 +14,7 @@ import re
 import subprocess
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 
@@ -31,7 +32,7 @@ def _token():
     return token
 
 
-def _get(path, token, payload=None):
+def _get(path, token, payload=None, include_link=False):
     headers = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
@@ -44,43 +45,72 @@ def _get(path, token, payload=None):
         payload = json.dumps(payload).encode()
     for attempt in range(4):
         try:
-            request = urllib.request.Request("https://api.github.com" + path, data=payload, headers=headers)
+            request = urllib.request.Request(
+                "https://api.github.com" + path, data=payload, headers=headers
+            )
             with urllib.request.urlopen(request, timeout=30) as response:
-                return json.load(response)
+                result = json.load(response)
+                return (
+                    (result, response.headers.get("Link", ""))
+                    if include_link
+                    else result
+                )
         except urllib.error.HTTPError as error:
             limited = error.code == 403 and (
                 error.headers.get("X-RateLimit-Remaining") == "0"
                 or error.headers.get("Retry-After")
             )
             if attempt == 3 or not (limited or error.code == 429 or error.code >= 500):
-                raise RuntimeError(f"GitHub API returned HTTP {error.code} for {path}") from None
-            delay = float(error.headers.get("Retry-After", 2 ** attempt))
+                raise RuntimeError(
+                    f"GitHub API returned HTTP {error.code} for {path}"
+                ) from None
+            delay = float(error.headers.get("Retry-After", 2**attempt))
             if limited and error.headers.get("X-RateLimit-Reset"):
-                delay = max(delay, float(error.headers["X-RateLimit-Reset"]) - time.time() + 1)
+                delay = max(
+                    delay, float(error.headers["X-RateLimit-Reset"]) - time.time() + 1
+                )
             if delay > 60:
-                raise RuntimeError("GitHub rate limit exceeded; retry later with GH_TOKEN") from None
+                raise RuntimeError(
+                    "GitHub rate limit exceeded; retry later with GH_TOKEN"
+                ) from None
             time.sleep(max(0, delay))
         except (urllib.error.URLError, TimeoutError):
             if attempt == 3:
                 raise RuntimeError(f"Could not reach GitHub API for {path}") from None
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
+
+
+def _actor(actor):
+    if not actor:
+        return None
+    login = actor["login"]
+    return (
+        login + "[bot]"
+        if actor.get("__typename") == "Bot" and not login.endswith("[bot]")
+        else login
+    )
 
 
 def _graphql_pulls(repo, numbers, token):
     owner, name = repo.split("/")
     pulls = {}
     for offset in range(0, len(numbers), 50):
-        batch = numbers[offset:offset + 50]
+        batch = numbers[offset : offset + 50]
         fields = " ".join(
             f"p{number}: pullRequest(number:{number}) "
-            "{ number title url author { login } mergedBy { login } mergedAt additions deletions }"
+            "{ number title url author { login __typename } mergedBy { login __typename } mergedAt additions deletions }"
             for number in batch
         )
         query = (
             "query($owner:String!,$name:String!) { repository(owner:$owner,name:$name) { "
-            + fields + " } }"
+            + fields
+            + " } }"
         )
-        result = _get("/graphql", token, {"query": query, "variables": {"owner": owner, "name": name}})
+        result = _get(
+            "/graphql",
+            token,
+            {"query": query, "variables": {"owner": owner, "name": name}},
+        )
         if result.get("errors"):
             raise RuntimeError("GitHub GraphQL query unavailable")
         items = result["data"]["repository"]
@@ -89,11 +119,14 @@ def _graphql_pulls(repo, numbers, token):
             if not item["mergedAt"]:
                 raise ValueError(f"Release notes link unmerged PR {repo}#{number}")
             pulls[number] = {
-                "number": item["number"], "title": item["title"], "url": item["url"],
-                "author": (item.get("author") or {}).get("login"),
-                "merger": (item.get("mergedBy") or {}).get("login"),
+                "number": item["number"],
+                "title": item["title"],
+                "url": item["url"],
+                "author": _actor(item.get("author")),
+                "merger": _actor(item.get("mergedBy")),
                 "merged_at": item["mergedAt"],
-                "additions": item["additions"], "deletions": item["deletions"],
+                "additions": item["additions"],
+                "deletions": item["deletions"],
             }
     return pulls
 
@@ -101,7 +134,9 @@ def _graphql_pulls(repo, numbers, token):
 def _numbers(repo, release):
     body = release.get("body") or ""
     pattern = r"https://github\.com/" + re.escape(repo) + r"/pull/(\d+)(?!\d)\b"
-    numbers = sorted({int(number) for number in re.findall(pattern, body, re.IGNORECASE)})
+    numbers = sorted(
+        {int(number) for number in re.findall(pattern, body, re.IGNORECASE)}
+    )
     if numbers:
         return numbers
     empty = re.search(r"\bno (?:changes|pull requests|commits)\b", body, re.IGNORECASE)
@@ -119,7 +154,8 @@ def collect(repo, limit=5, match="nightly"):
     """Return newest published matching releases and their linked, merged PRs.
 
     All release pages are examined because GitHub orders by creation rather than
-    publication. Authenticated PR reads use GraphQL batches of at most 50, falling
+    publication, with at most six page requests active. Authenticated PR reads
+    use GraphQL batches of at most 50, falling
     back to REST with at most six requests active if GraphQL is unavailable.
     """
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo):
@@ -127,22 +163,39 @@ def collect(repo, limit=5, match="nightly"):
     if not isinstance(limit, int) or limit < 1:
         raise ValueError("limit must be a positive integer")
     token = _token()
-    releases = []
-    page = 1
-    while True:
-        batch = _get(f"/repos/{repo}/releases?per_page=100&page={page}", token)
-        releases.extend(
-            item for item in batch
-            if not item["draft"] and item.get("published_at")
-            and match.lower() in item["tag_name"].lower()
+    prefix = f"/repos/{repo}/releases?per_page=100&page="
+    releases, link = _get(prefix + "1", token, include_link=True)
+    last = re.search(r'<([^>]+)>;\s*rel="last"', link)
+    if last:
+        last_page = int(
+            urllib.parse.parse_qs(urllib.parse.urlsplit(last[1]).query)["page"][0]
         )
-        if len(batch) < 100:
-            break
-        page += 1
+        with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+            for batch in pool.map(
+                lambda page: _get(prefix + str(page), token), range(2, last_page + 1)
+            ):
+                releases.extend(batch)
+    elif 'rel="next"' in link:
+        page = 2
+        while True:
+            batch, link = _get(prefix + str(page), token, include_link=True)
+            releases.extend(batch)
+            if 'rel="next"' not in link:
+                break
+            page += 1
+    releases = [
+        item
+        for item in releases
+        if not item["draft"]
+        and item.get("published_at")
+        and match.lower() in item["tag_name"].lower()
+    ]
     releases.sort(key=lambda item: item["published_at"], reverse=True)
     releases = releases[:limit]
     if len(releases) < limit:
-        raise ValueError(f"Found only {len(releases)} published releases matching {match!r}; need {limit}")
+        raise ValueError(
+            f"Found only {len(releases)} published releases matching {match!r}; need {limit}"
+        )
     membership = [_numbers(repo, release) for release in releases]
     numbers = sorted({number for items in membership for number in items})
 
