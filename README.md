@@ -15,7 +15,7 @@ Want a different ranking or format?
 - `metric`: `author`, `merger`, or `changes` (added + deleted lines).
 - `format`: `gif`, `mp4`, or `both`.
 
-Every matching contributor is included. Rows shrink as the list grows, then cycle through pages of up to 12. Counts come from merged PR links in release notes; GitHub-generated notes work.
+Every matching contributor is included. Everyone stays on screen together; rows and columns scale to fit. Counts come from merged PR links in release notes; GitHub-generated notes work.
 
 The action is currently private. [Set up access](docs/releases.md#private-action-access) before using it in another repository.
 

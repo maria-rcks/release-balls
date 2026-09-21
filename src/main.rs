@@ -48,7 +48,7 @@ struct Args {
     width: u32,
     #[arg(long, default_value_t = 60)]
     fps: u32,
-    /// Minimum clip length; multi-page clips allow at least four seconds per page.
+    /// Clip length in seconds, independent of contributor count.
     #[arg(long, default_value_t = 16.0)]
     duration: f64,
     #[arg(long, default_value = "ultrafast", value_parser = ["ultrafast", "superfast", "veryfast"])]

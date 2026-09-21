@@ -9,7 +9,7 @@ publish a release with github-generated notes or full merged pr links. the examp
 3. adds the linked gif and video download to the existing notes.
 4. saves the source data and rankings as an actions artifact.
 
-Names, counts, and balls shrink together as the list grows, down to 33px names at 1080px output. Up to 12 contributors appear per page, balanced across pages with consistent sizes. Longer rankings cycle through every page, allowing at least four seconds per page. With the default duration, 20 contributors take 16 seconds, 50 take 20 seconds, 100 take 36 seconds, and 1,000 take 5 minutes 36 seconds. The CLI only limits contributors when you pass `--top N`; bots are excluded unless you pass `--include-bots`.
+Every matching contributor stays visible in every frame. Names, counts, and balls scale uniformly into additional columns as the list grows. The default clip remains 16 seconds at any contributor count. Very large lists have tiny labels, especially in the 480px GIF; use a higher-resolution MP4 when individual names matter. The CLI only limits contributors when you pass `--top N`; bots are excluded unless you pass `--include-bots`.
 
 github scopes caches by ref. a new release tag may need a cold build unless a run on the default branch has already cached the same action binary. reruns on the same tag can reuse its cache.
 
