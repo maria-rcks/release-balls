@@ -18,7 +18,7 @@ jobs:
         run: |
           encoded_tag=$(jq -rn --arg tag "$RELEASE_TAG" '$tag | @uri')
           echo "url=https://github.com/$GITHUB_REPOSITORY/releases/download/$encoded_tag" >> "$GITHUB_OUTPUT"
-      - uses: maria-rcks/release-balls@ede6c450a5894f01c52b1d8fab9ac2e7bc0022ca
+      - uses: maria-rcks/release-balls@a59c80cd8076017652b293939b69e4fd50628696
         id: balls
         with:
           format: both
