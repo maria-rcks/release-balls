@@ -8,14 +8,14 @@ inputs:
     description: Read-only GitHub token for the source repository
     default: ${{ github.token }}
   releases:
-    description: Number of published releases
-    default: '5'
+    description: Number of published releases when tag is empty
+    default: '1'
   match:
     description: Substring in release tags (empty matches all)
-    default: nightly
-  tag:
-    description: Exact published release tag (overrides releases and match)
     default: ''
+  tag:
+    description: Exact release tag; defaults to the triggering release (overrides releases and match)
+    default: ${{ github.event.release.tag_name }}
   metric:
     description: author, merger, or changes (added + deleted lines by author)
     default: author
