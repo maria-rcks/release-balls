@@ -1,0 +1,176 @@
+{
+  "exact_publication_notes_preserved": true,
+  "exact_publication_single_block": true,
+  "exact_publication_assets_identical": true,
+  "passed": [
+    {
+      "case": "nightly",
+      "repository": "pingdotgg/t3code",
+      "tags": [
+        "v0.0.43-nightly.20260920.2031",
+        "v0.0.43-nightly.20260920.2018",
+        "v0.0.43-nightly.20260920.2005",
+        "v0.0.43-nightly.20260920.1990",
+        "v0.0.43-nightly.20260919.1978"
+      ],
+      "distinct_prs": 27,
+      "ranking": [
+        [
+          "juliusmarminge",
+          14
+        ],
+        [
+          "maria-rcks",
+          9
+        ],
+        [
+          "shivamhwp",
+          4
+        ]
+      ],
+      "media": [
+        "summary-merger.gif",
+        "summary-merger.mp4"
+      ]
+    },
+    {
+      "case": "uv",
+      "repository": "astral-sh/uv",
+      "tags": [
+        "0.12.17",
+        "0.12.16"
+      ],
+      "distinct_prs": 24,
+      "ranking": [
+        [
+          "zsol",
+          7
+        ],
+        [
+          "charliermarsh",
+          4
+        ],
+        [
+          "konstin",
+          3
+        ]
+      ],
+      "media": [
+        "summary-author.gif"
+      ]
+    },
+    {
+      "case": "cli",
+      "repository": "cli/cli",
+      "tags": [
+        "v2.101.0"
+      ],
+      "distinct_prs": 42,
+      "ranking": [
+        [
+          "williammartin",
+          9407
+        ],
+        [
+          "sergiou87",
+          68
+        ]
+      ],
+      "media": [
+        "summary-changes.mp4"
+      ]
+    },
+    {
+      "case": "release",
+      "repository": "astral-sh/uv",
+      "tags": [
+        "0.12.17"
+      ],
+      "distinct_prs": 8,
+      "ranking": [
+        [
+          "charliermarsh",
+          3
+        ],
+        [
+          "AlexWaygood",
+          1
+        ],
+        [
+          "konstin",
+          1
+        ]
+      ],
+      "media": [
+        "summary-author.gif",
+        "summary-author.mp4"
+      ]
+    },
+    {
+      "case": "exact",
+      "repository": "astral-sh/uv",
+      "tags": [
+        "0.12.1"
+      ],
+      "distinct_prs": 17,
+      "ranking": [
+        [
+          "charliermarsh",
+          5
+        ],
+        [
+          "EliteTK",
+          3
+        ],
+        [
+          "Gankra",
+          2
+        ]
+      ],
+      "media": [
+        "summary-author.gif"
+      ]
+    },
+    {
+      "case": "exact-publication",
+      "repository": "astral-sh/uv",
+      "tags": [
+        "0.12.1"
+      ],
+      "distinct_prs": 17,
+      "ranking": [
+        [
+          "charliermarsh",
+          5
+        ],
+        [
+          "EliteTK",
+          3
+        ],
+        [
+          "Gankra",
+          2
+        ]
+      ],
+      "media": [
+        "summary-author.gif",
+        "summary-author.mp4"
+      ]
+    },
+    {
+      "case": "private-empty",
+      "repository": "maria-rcks/release-balls-e2e-nightly",
+      "tags": [
+        "e2e/empty"
+      ],
+      "distinct_prs": 0,
+      "ranking": [],
+      "media": [
+        "summary-author.gif"
+      ]
+    }
+  ],
+  "decoded_unique_media": 9,
+  "downstream_identical": true,
+  "release_assets_identical": true
+}
