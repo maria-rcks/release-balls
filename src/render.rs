@@ -740,7 +740,7 @@ pub fn render(
     }
     if formats.contains(&"gif") {
         command.args(["-filter_threads", "1", "-vf",
-            "fps=15,scale=480:-1:flags=bilinear,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=none",
+            "fps=15,scale=480:-1:flags=bilinear,split[a][b];[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=none:diff_mode=rectangle",
             "-loop", "0"]).arg(format!("{stem}.gif"));
     }
     if let Some(parent) = output.parent().filter(|path| !path.as_os_str().is_empty()) {
@@ -752,6 +752,12 @@ pub fn render(
         .spawn()
         .context("ffmpeg is required; install it using your system package manager")?;
     let mut stdin = process.stdin.take().context("ffmpeg stdin unavailable")?;
+    // Reduce pipe wakeups while streaming full frames. Restricted kernels may
+    // reject enlargement; their default pipe remains usable.
+    #[cfg(target_os = "linux")]
+    if formats.contains(&"mp4") {
+        let _ = rustix::pipe::fcntl_setpipe_size(&stdin, 1024 * 1024);
+    }
     let mut stderr = process.stderr.take().context("ffmpeg stderr unavailable")?;
     let errors = std::thread::spawn(move || {
         let mut message = String::new();
@@ -800,7 +806,7 @@ pub fn render(
         previous.clear();
         for (index, sprite) in sprites.iter().enumerate() {
             let distance =
-                (f64::from(span) / 1.1) * (sprite.count as f64 / maximum as f64) * f64::from(frame)
+                f64::from(span) * (sprite.count as f64 / maximum as f64) * f64::from(frame)
                     / f64::from(options.fps);
             let phase = distance % f64::from(2 * span);
             let x = left

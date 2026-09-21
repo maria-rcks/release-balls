@@ -20,3 +20,6 @@ url = "2"
 lto = "thin"
 codegen-units = 1
 strip = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+rustix = { version = "1", features = ["pipe"] }
