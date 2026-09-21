@@ -307,12 +307,17 @@ fn artwork(
     let mut text_scale = 1.0 - 0.25 * (rows.len().saturating_sub(3) as f64 / 9.0).min(1.0);
     if rows.len() > 12 {
         text_scale = 0.0;
+        let mut separated = false;
         for candidate in 1..=(rows.len() as f64).sqrt().ceil() as usize {
             let height = 800.0 / rows.len().div_ceil(candidate) as f64;
             let fit = (1.0 / candidate as f64).min(height / 90.0);
-            if fit > text_scale {
+            let candidate_separated = height * f64::from(width) / 1080.0 >= 3.0;
+            if (candidate_separated && !separated)
+                || (candidate_separated == separated && fit > text_scale)
+            {
                 text_scale = fit;
                 columns = candidate;
+                separated = candidate_separated;
             }
         }
     }
