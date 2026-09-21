@@ -257,6 +257,7 @@ fn artwork(
     rows: &[(String, u64)],
     metric: &str,
     width: u32,
+    layout_rows: usize,
 ) -> Result<(Vec<u8>, Vec<Sprite>, i32)> {
     let library = Library::init()?;
     let scale = f64::from(width) * 2.0 / 1080.0;
@@ -297,8 +298,12 @@ fn artwork(
         watermark_y,
         163,
     );
-    let name_font = font(&library, n(44.0) as u32)?;
-    let count_font = font(&library, n(25.0) as u32)?;
+    // Scale every row equally, including the final page. Keep the title and
+    // watermark independent of contributor density.
+    let density = (layout_rows.saturating_sub(3) as f64 / 9.0).min(1.0);
+    let text_scale = 1.0 - 0.25 * density;
+    let name_font = font(&library, n(44.0 * text_scale) as u32)?;
+    let count_font = font(&library, n(25.0 * text_scale) as u32)?;
     let mut names = Vec::with_capacity(rows.len());
     for (login, _) in rows {
         let mut label = login.clone();
@@ -319,12 +324,10 @@ fn artwork(
         .fold(0.0_f64, f64::max)
         / scale;
     let left = rounded((70.0 + label_width + 24.0 + 76.0).max(350.0) * f64::from(width) / 1080.0);
-    let row_height = if rows.len() <= 3 {
+    let row_height = if layout_rows <= 3 {
         250.0
-    } else if rows.len() <= 6 {
-        500.0 / (rows.len() - 1) as f64
     } else {
-        700.0 / (rows.len() - 1) as f64
+        (500.0 + (layout_rows - 3) as f64 * 28.0) / (layout_rows - 1) as f64
     };
     let client = Client::builder()
         .user_agent("release-balls")
@@ -351,8 +354,8 @@ fn artwork(
     let mut sprites = Vec::with_capacity(rows.len());
     for (index, ((login, count), source)) in rows.iter().zip(sources).enumerate() {
         let y = center + (index as f64 - (rows.len() as f64 - 1.0) / 2.0) * row_height;
-        let radius = rounded(76.0_f64.min(row_height * 0.4) * f64::from(width) / 1080.0);
-        names[index].draw(&mut canvas, f64::from(n(70.0)), n(y - 43.0), 0);
+        let radius = rounded((76.0 * text_scale).min(row_height * 0.4) * f64::from(width) / 1080.0);
+        names[index].draw(&mut canvas, f64::from(n(70.0)), n(y - 43.0 * text_scale), 0);
         let count_text = text(
             &count_font,
             &format!(
@@ -368,7 +371,7 @@ fn artwork(
         count_text.draw(
             &mut canvas,
             f64::from(n(72.0)),
-            n(y - 43.0) + name_bottom + n(12.0) - count_text.bounds[1],
+            n(y - 43.0 * text_scale) + name_bottom + n(12.0 * text_scale) - count_text.bounds[1],
             0,
         );
         let source = match source {
@@ -682,14 +685,22 @@ pub fn render(
         bail!("YUV420 requires an even width");
     }
     // Keep only one page's artwork in memory. Every contributor appears; text
-    // sizes stay fixed and speeds use the maximum across the entire ranking.
-    const ROWS_PER_PAGE: usize = 8;
+    // sizes stay consistent across pages and speeds use the global maximum.
+    const ROWS_PER_PAGE: usize = 12;
     let page_count = rows.len().max(1).div_ceil(ROWS_PER_PAGE);
+    let layout_rows = rows.len().div_ceil(page_count);
     let prepare_page = |page: usize| -> Result<_> {
-        let start = page * ROWS_PER_PAGE;
-        let end = (start + ROWS_PER_PAGE).min(rows.len());
-        let (background, sprites, mut left) =
-            artwork(repo, subtitle, &rows[start..end], metric, options.width)?;
+        // Balance pages instead of leaving a nearly empty final page.
+        let start = page * rows.len() / page_count;
+        let end = (page + 1) * rows.len() / page_count;
+        let (background, sprites, mut left) = artwork(
+            repo,
+            subtitle,
+            &rows[start..end],
+            metric,
+            options.width,
+            layout_rows,
+        )?;
         if page_count > 1 {
             // Reserve the maximum label width so every page has the same track.
             left = rounded(530.0 * f64::from(options.width) / 1080.0);
