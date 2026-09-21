@@ -1,6 +1,6 @@
 # add the animation to a release
 
-copy [examples/release.yml](../examples/release.yml) to `.github/workflows/release-balls.yml` in your repository. see the [private action access requirement](../README.md#try-it-in-github-actions) first.
+copy [examples/release.yml](../examples/release.yml) to `.github/workflows/release-balls.yml` in your repository. see the [private action access requirement](#private-action-access) first.
 
 publish a release with github-generated notes or full merged pr links. the example url-encodes the tag for asset links, including tags containing `/` or `#`. the workflow:
 
@@ -24,3 +24,9 @@ for private repositories, assets require authentication. the download links work
 upload `${{ steps.balls.outputs.directory }}` with `actions/upload-artifact@v4`, then download that artifact in the next job with `actions/download-artifact@v4`. action outputs are paths on the current runner, so passing a path alone to a different job will not transfer the files. after downloading, open `manifest.json`, `data.json`, and `embed.md` relative to the download directory. the file paths inside the manifest refer to the original render job.
 
 [real workflow runs and results](e2e.md)
+
+## Private action access
+
+This action is shared with other private `maria-rcks` repositories. For another account, copy it into your own private repository, enable **Settings → Actions → General → Access**, and change the workflow's `uses:` reference. Passing a token to the action does not grant access to the action itself.
+
+For private source PRs, add `pull-requests: read` to the workflow permissions. To read a different private source repository, set `token: ${{ secrets.SOURCE_READ_TOKEN }}` to a token with access to that repository's releases and pull requests.
