@@ -104,6 +104,8 @@ Rendering the example MP4 takes about 0.7 seconds on a 4-vCPU runner, excluding 
 
 ## More
 
-- [Release publishing details](docs/releases.md): tag selection, private repositories, and releases created by other workflows.
-- [Verified workflow runs](docs/e2e.md)
-- [Benchmarks](docs/performance.md)
+[Release publishing details](docs/releases.md) covers tag selection, private repositories, and releases created by other workflows.
+
+## License
+
+[MIT](LICENSE). The bundled font is CC0; see [assets](assets/README.md).

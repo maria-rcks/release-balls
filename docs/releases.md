@@ -31,8 +31,6 @@ Assets in private repositories require authentication. The download links work f
 
 Upload `${{ steps.balls.outputs.directory }}` with `actions/upload-artifact@v4`, then download that artifact in the next job with `actions/download-artifact@v4`. Action outputs are paths on the current runner, so passing a path alone to a different job will not transfer the files. After downloading, open `manifest.json`, `data.json`, and `embed.md` relative to the download directory. The file paths inside the manifest refer to the original render job.
 
-[Real workflow runs and results](e2e.md)
-
 ## Private action access
 
 This action is shared with other private `maria-rcks` repositories. For another account, copy it into your own private repository, enable **Settings → Actions → General → Access**, and change the workflow's `uses:` reference. Passing a token to the action does not grant access to the action itself.
