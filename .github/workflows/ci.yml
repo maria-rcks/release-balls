@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - run: pkg-config --exists freetype2 || (sudo apt-get update -qq && sudo apt-get install -y -qq libfreetype6-dev pkg-config)
       - run: cargo fmt --check
       - run: cargo clippy --release --locked -- -D warnings
       - run: cargo build --release --locked
