@@ -9,7 +9,7 @@ jobs:
   render:
     runs-on: ubuntu-latest
     steps:
-      - uses: maria-rcks/release-balls@1ad59ac9696bad1353b77766a94fe0a186aa60ab
+      - uses: maria-rcks/release-balls@v1
         id: balls
         with:
           repository: pingdotgg/t3code
