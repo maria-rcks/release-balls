@@ -25,6 +25,9 @@ struct Args {
     /// Exact published release tag; overrides --releases and --match.
     #[arg(long, conflicts_with = "data", value_parser = clap::builder::NonEmptyStringValueParser::new())]
     tag: Option<String>,
+    /// Rank every PR merged in a window instead of releases: 24h, 7d, 2w, or 2026-09-01 (UTC).
+    #[arg(long, conflicts_with_all = ["data", "tag", "per_release"])]
+    since: Option<String>,
     #[arg(long, default_value = "author", value_parser = ["author", "merger", "changes"])]
     metric: String,
     #[arg(long, default_value = "")]
@@ -62,6 +65,9 @@ struct Args {
 #[derive(Deserialize)]
 struct Snapshot {
     repo: String,
+    /// Set by --since; its single pseudo-release tag is already a title phrase.
+    #[serde(default)]
+    window: bool,
     releases: Vec<Release>,
 }
 #[derive(Deserialize)]
@@ -149,6 +155,8 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let value = if let Some(path) = &args.data {
         serde_json::from_slice(&fs::read(path)?)?
+    } else if let Some(since) = &args.since {
+        data::collect_merged(&args.repo, since)?
     } else {
         data::collect(
             &args.repo,
@@ -182,10 +190,13 @@ fn main() -> Result<()> {
     let mut artifacts = Vec::new();
     let mut markdown = Vec::new();
     for releases in groups {
-        let subtitle = if releases.len() == 1 {
+        // Window labels carry their own preposition ("in the last 7 days", "since ...").
+        let subtitle = if snapshot.window {
             releases[0].tag.clone()
+        } else if releases.len() == 1 {
+            format!("in {}", releases[0].tag)
         } else {
-            format!("the last {} releases", releases.len())
+            format!("in the last {} releases", releases.len())
         };
         let stem = if args.per_release {
             releases[0]

@@ -1,0 +1,24 @@
+name: Weekly Release Balls
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: maria-rcks/release-balls@v1
+        id: balls
+        with:
+          since: 7d
+          format: both
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: weekly-media
+          path: ${{ steps.balls.outputs.directory }}

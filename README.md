@@ -38,12 +38,25 @@ To get the files as a workflow artifact instead, render any repository's release
     path: ${{ steps.balls.outputs.directory }}
 ```
 
+## Rank a time window
+
+Set `since` to rank every PR merged in a window, with or without releases: `24h`, `7d`, `2w`, or a UTC date like `2026-09-01`. The title reads "Pull requests merged in the last 7 days". [examples/weekly.yml](examples/weekly.yml) renders last week's PRs every Monday.
+
+```yaml
+- uses: maria-rcks/release-balls@v1
+  with:
+    since: 7d
+```
+
+Windows come from GitHub search, which returns at most 1,000 PRs; use a shorter window for busier repositories.
+
 ## Inputs
 
 | Input | Default | What it does |
 | --- | --- | --- |
 | `metric` | `author` | `author` counts merged PRs by author, `merger` counts who merged them, `changes` counts added + deleted lines by author. |
 | `format` | `mp4` | `gif`, `mp4`, or `both`. |
+| `since` | unset | Rank PRs merged in a window (`24h`, `7d`, `2w`, `2026-09-01`) instead of releases. Overrides `tag`, `releases`, and `match`. |
 | `tag` | the triggering release | Exact release tag. Overrides `releases` and `match`. Set `tag: ''` to select by count instead. |
 | `releases` | `1` | How many of the latest published releases to combine when `tag` is empty. |
 | `match` | `''` | Substring a tag must contain, such as `nightly`. Empty matches every tag. |
@@ -68,7 +81,7 @@ To use the files in another job, upload `directory` as an artifact. See [passing
 
 ## What gets counted
 
-- Only merged PRs linked from release notes count, as full URLs like `https://github.com/owner/repo/pull/123`. GitHub-generated release notes work. PRs are not inferred from commits between tags.
+- In release mode, only merged PRs linked from release notes count, as full URLs like `https://github.com/owner/repo/pull/123`. GitHub-generated release notes work. PRs are not inferred from commits between tags.
 - A PR linked from several selected releases counts once.
 - Drafts are skipped. Published prereleases are included.
 - Bots are excluded. Ties sort alphabetically.
@@ -85,7 +98,7 @@ export GH_TOKEN=...  # can read the source repository
 ./target/release/release-balls --repo pingdotgg/t3code --releases 5 --match nightly --metric merger --format both
 ```
 
-Files go to `out/`. The CLI defaults differ from the action: 5 releases matching `nightly`. Useful flags: `--tag`, `--per-release`, `--top N`, `--include-bots`, `--data data.json` to re-render a saved snapshot without calling the GitHub API. Run `--help` for the rest.
+Files go to `out/`. The CLI defaults differ from the action: 5 releases matching `nightly`. Useful flags: `--since 7d`, `--tag`, `--per-release`, `--top N`, `--include-bots`, `--data data.json` to re-render a saved snapshot without calling the GitHub API. Run `--help` for the rest.
 
 Rendering the example MP4 takes about 0.7 seconds on a 4-vCPU runner, excluding GitHub requests and the build. The action caches the compiled binary, so only the first run on a new ref pays for a Rust build.
 

@@ -267,7 +267,7 @@ fn artwork(
     let n = |value: f64| rounded(value * scale);
     let mut canvas = RgbImage::from_pixel(width * 2, width * 2, Rgb([255; 3]));
     let title = format!(
-        "{} in {subtitle}",
+        "{} {subtitle}",
         if metric == "changes" {
             "Lines changed"
         } else {
@@ -408,10 +408,11 @@ fn artwork(
                 &format!(
                     "{} {}",
                     grouped_number(*count),
-                    if metric == "changes" {
-                        "lines"
-                    } else {
-                        "merges"
+                    match (metric == "changes", *count == 1) {
+                        (true, true) => "line",
+                        (true, false) => "lines",
+                        (false, true) => "merge",
+                        (false, false) => "merges",
                     }
                 ),
             )?;
