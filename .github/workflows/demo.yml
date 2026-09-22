@@ -21,6 +21,8 @@ jobs:
         id: balls
         with:
           repository: pingdotgg/t3code
+          releases: '5'
+          match: nightly
           metric: ${{ inputs.metric }}
           format: ${{ inputs.format }}
       - uses: actions/upload-artifact@v4

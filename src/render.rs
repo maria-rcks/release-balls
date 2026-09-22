@@ -200,6 +200,8 @@ struct Sprite {
     y: i32,
     radius: i32,
     count: u64,
+    left: i32,
+    span: i32,
 }
 
 fn sprite(source: &RgbImage, radius: i32, y: i32, count: u64) -> Sprite {
@@ -236,6 +238,8 @@ fn sprite(source: &RgbImage, radius: i32, y: i32, count: u64) -> Sprite {
         y,
         radius,
         count,
+        left: 0,
+        span: 0,
     }
 }
 
@@ -257,7 +261,7 @@ fn artwork(
     rows: &[(String, u64)],
     metric: &str,
     width: u32,
-) -> Result<(Vec<u8>, Vec<Sprite>, i32)> {
+) -> Result<(Vec<u8>, Vec<Sprite>)> {
     let library = Library::init()?;
     let scale = f64::from(width) * 2.0 / 1080.0;
     let n = |value: f64| rounded(value * scale);
@@ -297,14 +301,35 @@ fn artwork(
         watermark_y,
         163,
     );
-    let name_font = font(&library, n(44.0) as u32)?;
-    let count_font = font(&library, n(25.0) as u32)?;
+    // Fit every contributor simultaneously. Choose the grid that leaves the
+    // largest uniform row scale; small lists retain the accepted single column.
+    let mut columns = 1;
+    let mut text_scale = 1.0 - 0.25 * (rows.len().saturating_sub(3) as f64 / 9.0).min(1.0);
+    if rows.len() > 12 {
+        text_scale = 0.0;
+        let mut separated = false;
+        for candidate in 1..=(rows.len() as f64).sqrt().ceil() as usize {
+            let height = 800.0 / rows.len().div_ceil(candidate) as f64;
+            let fit = (1.0 / candidate as f64).min(height / 90.0);
+            let candidate_separated = height * f64::from(width) / 1080.0 >= 3.0;
+            if (candidate_separated && !separated)
+                || (candidate_separated == separated && fit > text_scale)
+            {
+                text_scale = fit;
+                columns = candidate;
+                separated = candidate_separated;
+            }
+        }
+    }
+    let layout_rows = rows.len().max(1).div_ceil(columns);
+    let name_font = font(&library, n(44.0 * text_scale).max(1) as u32)?;
+    let count_font = font(&library, n(25.0 * text_scale).max(1) as u32)?;
     let mut names = Vec::with_capacity(rows.len());
     for (login, _) in rows {
         let mut label = login.clone();
         loop {
             let shaped = text(&name_font, &label)?;
-            if shaped.advance <= f64::from(n(360.0)) {
+            if shaped.advance <= f64::from(n(360.0 * text_scale).max(1)) || label == "…" {
                 names.push(shaped);
                 break;
             }
@@ -318,67 +343,107 @@ fn artwork(
         .map(|name| name.advance)
         .fold(0.0_f64, f64::max)
         / scale;
-    let left = rounded((70.0 + label_width + 24.0 + 76.0).max(350.0) * f64::from(width) / 1080.0);
-    let row_height = if rows.len() <= 3 {
+    let row_height = if rows.len() > 12 {
+        800.0 / layout_rows as f64
+    } else if layout_rows <= 3 {
         250.0
     } else {
-        500.0 / (rows.len() - 1) as f64
+        (500.0 + (layout_rows - 3) as f64 * 28.0) / (layout_rows - 1) as f64
     };
     let client = Client::builder()
         .user_agent("release-balls")
         .timeout(Duration::from_secs(15))
         .build()?;
-    let sources: Vec<Result<RgbImage>> = std::thread::scope(|scope| {
-        let handles: Vec<_> = rows
-            .iter()
-            .map(|(login, _)| {
-                let client = &client;
-                scope.spawn(move || avatar(login, client))
-            })
-            .collect();
-        handles
-            .into_iter()
-            .map(|handle| {
-                handle
-                    .join()
-                    .unwrap_or_else(|_| Err(anyhow::anyhow!("avatar download panicked")))
-            })
-            .collect()
-    });
     let name_bottom = text(&name_font, "Ag")?.bounds[3];
     let mut sprites = Vec::with_capacity(rows.len());
-    for (index, ((login, count), source)) in rows.iter().zip(sources).enumerate() {
-        let y = center + (index as f64 - (rows.len() as f64 - 1.0) / 2.0) * row_height;
-        let radius = rounded(76.0_f64.min(row_height * 0.4) * f64::from(width) / 1080.0);
-        names[index].draw(&mut canvas, f64::from(n(70.0)), n(y - 43.0), 0);
-        let count_text = text(
-            &count_font,
-            &format!(
-                "{} {}",
-                grouped_number(*count),
-                if metric == "changes" {
-                    "lines"
-                } else {
-                    "merges"
-                }
-            ),
-        )?;
-        count_text.draw(
-            &mut canvas,
-            f64::from(n(72.0)),
-            n(y - 43.0) + name_bottom + n(12.0) - count_text.bounds[1],
-            0,
-        );
-        let source = match source {
-            Ok(image) => image,
-            Err(_) => fallback_avatar(login, &library)?,
-        };
-        sprites.push(sprite(
-            &source,
-            radius,
-            rounded(y * f64::from(width) / 1080.0),
-            *count,
-        ));
+    // Bound avatar download concurrency and decoded-image memory even for
+    // thousands of contributors. Only the small rendered sprites persist.
+    for (batch, chunk) in rows.chunks(8).enumerate() {
+        let sources: Vec<Result<RgbImage>> = std::thread::scope(|scope| {
+            let handles: Vec<_> = chunk
+                .iter()
+                .map(|(login, _)| {
+                    let client = &client;
+                    scope.spawn(move || avatar(login, client))
+                })
+                .collect();
+            handles
+                .into_iter()
+                .map(|handle| {
+                    handle
+                        .join()
+                        .unwrap_or_else(|_| Err(anyhow::anyhow!("avatar download panicked")))
+                })
+                .collect()
+        });
+        for (offset, ((login, count), source)) in chunk.iter().zip(sources).enumerate() {
+            let index = batch * 8 + offset;
+            let column = index / layout_rows;
+            let column_start = column * layout_rows;
+            let column_rows = (rows.len() - column_start).min(layout_rows);
+            let row = index - column_start;
+            let cell_x = 70.0 + column as f64 * 940.0 / columns as f64;
+
+            let y = center + (row as f64 - (column_rows as f64 - 1.0) / 2.0) * row_height;
+            let radius =
+                rounded((76.0 * text_scale).min(row_height * 0.4) * f64::from(width) / 1080.0)
+                    .max(1);
+            // Keep dense sprite rectangles separated after pixel rounding,
+            // including their YUV chroma cells.
+            let radius = if rows.len() > 12 {
+                radius
+                    .min(((row_height * f64::from(width) / 1080.0 - 1.0) / 2.0).floor() as i32)
+                    .max(1)
+            } else {
+                radius
+            };
+            names[index].draw(
+                &mut canvas,
+                f64::from(n(cell_x)),
+                n(y - 43.0 * text_scale),
+                0,
+            );
+            let count_text = text(
+                &count_font,
+                &format!(
+                    "{} {}",
+                    grouped_number(*count),
+                    if metric == "changes" {
+                        "lines"
+                    } else {
+                        "merges"
+                    }
+                ),
+            )?;
+            count_text.draw(
+                &mut canvas,
+                f64::from(n(cell_x + 2.0 * text_scale)),
+                n(y - 43.0 * text_scale) + name_bottom + n(12.0 * text_scale)
+                    - count_text.bounds[1],
+                0,
+            );
+            let source = match source {
+                Ok(image) => image,
+                Err(_) => fallback_avatar(login, &library)?,
+            };
+            let mut ball = sprite(
+                &source,
+                radius,
+                rounded(y * f64::from(width) / 1080.0),
+                *count,
+            );
+            let (left, right) = if rows.len() <= 12 {
+                ((70.0 + label_width + 24.0 + 76.0).max(350.0), 980.0)
+            } else {
+                (
+                    cell_x + label_width + 100.0 * text_scale,
+                    cell_x + 940.0 / columns as f64 - 90.0 * text_scale,
+                )
+            };
+            ball.left = rounded(left * f64::from(width) / 1080.0);
+            ball.span = (rounded(right * f64::from(width) / 1080.0) - ball.left).max(1);
+            sprites.push(ball);
+        }
     }
     if rows.is_empty() {
         text(&name_font, "No matching contributions")?.draw(
@@ -388,7 +453,7 @@ fn artwork(
             0,
         );
     }
-    Ok((downsample_artwork(&canvas, width).into_raw(), sprites, left))
+    Ok((downsample_artwork(&canvas, width).into_raw(), sprites))
 }
 
 fn downsample_artwork(canvas: &RgbImage, width: u32) -> RgbImage {
@@ -665,9 +730,8 @@ pub fn render(
         || options.fps == 0
         || !options.duration.is_finite()
         || options.duration <= 0.0
-        || rows.len() > 6
     {
-        bail!("invalid render dimensions, timing, or row count");
+        bail!("invalid render dimensions or timing");
     }
     if formats.is_empty()
         || formats
@@ -680,7 +744,7 @@ pub fn render(
     if yuv && !options.width.is_multiple_of(2) {
         bail!("YUV420 requires an even width");
     }
-    let (background, sprites, left) = artwork(repo, subtitle, rows, metric, options.width)?;
+    let (background, sprites) = artwork(repo, subtitle, rows, metric, options.width)?;
     let yuv_sprites: Vec<_> = if yuv {
         sprites.iter().map(YuvSprite::new).collect()
     } else {
@@ -766,7 +830,6 @@ pub fn render(
     });
     let mut canvas = background.clone();
     let mut previous = Vec::with_capacity(sprites.len());
-    let span = rounded(f64::from(options.width) * 980.0 / 1080.0) - left;
     let maximum = rows
         .iter()
         .map(|(_, count)| *count)
@@ -774,7 +837,7 @@ pub fn render(
         .unwrap_or(0)
         .max(1);
     let frames = rounded(f64::from(options.fps) * options.duration).max(1);
-    let mut write_result = Ok(());
+    let mut write_result: Result<()> = Ok(());
     for frame in 0..frames {
         if options.strategy == "cached" {
             canvas.copy_from_slice(&background);
@@ -805,11 +868,12 @@ pub fn render(
         }
         previous.clear();
         for (index, sprite) in sprites.iter().enumerate() {
+            let span = sprite.span;
             let distance =
                 f64::from(span) * (sprite.count as f64 / maximum as f64) * f64::from(frame)
                     / f64::from(options.fps);
             let phase = distance % f64::from(2 * span);
-            let x = left
+            let x = sprite.left
                 + rounded(if phase <= f64::from(span) {
                     phase
                 } else {
@@ -841,7 +905,7 @@ pub fn render(
             previous.push((x, y, sprite.diameter));
         }
         if let Err(error) = stdin.write_all(&canvas) {
-            write_result = Err(error);
+            write_result = Err(error.into());
             break;
         }
     }
