@@ -16,6 +16,9 @@ inputs:
   tag:
     description: Exact release tag; defaults to the triggering release (overrides releases and match)
     default: ${{ github.event.release.tag_name }}
+  since:
+    description: Rank every PR merged in a window instead of releases, like 24h, 7d, 2w, or 2026-09-01 (overrides tag, releases, and match)
+    default: ''
   metric:
     description: author, merger, or changes (added + deleted lines by author)
     default: author
@@ -82,6 +85,7 @@ runs:
         RB_RELEASES: ${{ inputs.releases }}
         RB_MATCH: ${{ inputs.match }}
         RB_TAG: ${{ inputs.tag }}
+        RB_SINCE: ${{ inputs.since }}
         RB_METRIC: ${{ inputs.metric }}
         RB_USERS: ${{ inputs.users }}
         RB_FORMAT: ${{ inputs.format }}
@@ -89,7 +93,9 @@ runs:
         RB_OUTPUT: ${{ inputs.output }}
       run: |
         tag_args=()
-        if [[ -n "$RB_TAG" ]]; then
+        if [[ -n "$RB_SINCE" ]]; then
+          tag_args=(--since "$RB_SINCE")
+        elif [[ -n "$RB_TAG" ]]; then
           tag_args=(--tag "$RB_TAG")
         fi
         "$GITHUB_ACTION_PATH/target/release/release-balls" "${tag_args[@]}" \

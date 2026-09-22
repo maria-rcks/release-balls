@@ -25,6 +25,9 @@ struct Args {
     /// Exact published release tag; overrides --releases and --match.
     #[arg(long, conflicts_with = "data", value_parser = clap::builder::NonEmptyStringValueParser::new())]
     tag: Option<String>,
+    /// Rank every PR merged in a window instead of releases: 24h, 7d, 2w, or 2026-09-01 (UTC).
+    #[arg(long, conflicts_with_all = ["data", "tag", "per_release"])]
+    since: Option<String>,
     #[arg(long, default_value = "author", value_parser = ["author", "merger", "changes"])]
     metric: String,
     #[arg(long, default_value = "")]
@@ -149,6 +152,8 @@ fn main() -> Result<()> {
     let start = Instant::now();
     let value = if let Some(path) = &args.data {
         serde_json::from_slice(&fs::read(path)?)?
+    } else if let Some(since) = &args.since {
+        data::collect_merged(&args.repo, since)?
     } else {
         data::collect(
             &args.repo,

@@ -2,6 +2,7 @@
 //! Bare references and external repositories are not counted.
 
 use anyhow::{anyhow, bail, Context, Result};
+use chrono::{DateTime, NaiveDate, NaiveTime, TimeDelta, Utc};
 use regex::Regex;
 use reqwest::blocking::Client;
 use serde_json::{json, Value};
@@ -243,22 +244,121 @@ fn numbers(repo: &str, release: &Value) -> Result<Vec<u64>> {
     bail!("{}: no recognized {repo} PR links in release notes; expected full GitHub pull request URLs or an explicitly empty changelog", release["tag_name"].as_str().unwrap_or("unknown release"))
 }
 
-/// Scan every release page, then select the newest publication dates.
-pub fn collect(repo: &str, count: usize, pattern: &str, tag: Option<&str>) -> Result<Value> {
-    if !Regex::new(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")?.is_match(repo) {
-        bail!("repo must be owner/repository");
-    }
-    if count == 0 {
-        bail!("limit must be a positive integer");
-    }
-    let api = Api {
+fn api() -> Result<Api> {
+    Ok(Api {
         client: Client::builder()
             .timeout(Duration::from_secs(30))
             .user_agent("release-balls")
             .redirect(reqwest::redirect::Policy::limited(10))
             .build()?,
         token: token(),
+    })
+}
+
+fn check_repo(repo: &str) -> Result<()> {
+    if !Regex::new(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")?.is_match(repo) {
+        bail!("repo must be owner/repository");
+    }
+    Ok(())
+}
+
+fn fetch_pulls(api: &Api, repo: &str, unique: &[u64]) -> Result<BTreeMap<u64, Value>> {
+    let graphql = if api.token.is_some() {
+        match graphql_pulls(api, repo, unique) {
+            Ok(pulls) => Some(pulls),
+            Err(error) if error.downcast_ref::<Unmerged>().is_some() => return Err(error),
+            Err(_) => None,
+        }
+    } else {
+        None
     };
+    Ok(match graphql {
+        Some(pulls) => pulls,
+        None => parallel(unique, |number| {
+            let item = api.get(&format!("/repos/{repo}/pulls/{number}"), None)?.0;
+            Ok((*number, pull(&item, repo, *number, false)?))
+        })?
+        .into_iter()
+        .collect(),
+    })
+}
+
+/// Parse `24h`, `7d`, `2w`, or a UTC date into a start time and a title phrase.
+fn window(since: &str) -> Result<(DateTime<Utc>, String)> {
+    let now = Utc::now();
+    if let Ok(date) = since.parse::<NaiveDate>() {
+        let start = date.and_time(NaiveTime::MIN).and_utc();
+        if start > now {
+            bail!("--since date is in the future");
+        }
+        return Ok((start, format!("{date} to {}", now.date_naive())));
+    }
+    let captures = Regex::new(r"^([1-9][0-9]{0,3})([hdw])$")?
+        .captures(since)
+        .context("--since must look like 24h, 7d, 2w, or 2026-09-01")?;
+    let amount: i64 = captures[1].parse()?;
+    let (unit, delta) = match &captures[2] {
+        "h" => ("hour", TimeDelta::hours(amount)),
+        "d" => ("day", TimeDelta::days(amount)),
+        _ => ("week", TimeDelta::weeks(amount)),
+    };
+    let label = if amount == 1 {
+        format!("the last {unit}")
+    } else {
+        format!("the last {amount} {unit}s")
+    };
+    Ok((now - delta, label))
+}
+
+/// Collect every PR merged since a point in time, as one pseudo-release.
+pub fn collect_merged(repo: &str, since: &str) -> Result<Value> {
+    check_repo(repo)?;
+    let (start, label) = window(since)?;
+    let api = api()?;
+    let query = format!(
+        "repo:{repo} is:pr is:merged merged:>={}",
+        start.format("%Y-%m-%dT%H:%M:%SZ")
+    );
+    let encoded = url::form_urlencoded::byte_serialize(query.as_bytes()).collect::<String>();
+    let mut unique = BTreeSet::new();
+    for page in 1.. {
+        let (result, _) = api.get(
+            &format!("/search/issues?q={encoded}&per_page=100&page={page}"),
+            None,
+        )?;
+        let total = result["total_count"].as_u64().unwrap_or(0);
+        if total > 1000 {
+            bail!("{total} PRs merged in {label}; GitHub search returns at most 1000, so use a shorter window");
+        }
+        let items = array(result["items"].clone())?;
+        for item in &items {
+            unique.insert(
+                field(item, "number")?
+                    .as_u64()
+                    .context("Invalid PR number")?,
+            );
+        }
+        if items.len() < 100 || unique.len() as u64 >= total {
+            break;
+        }
+    }
+    let unique: Vec<_> = unique.into_iter().collect();
+    let pulls = fetch_pulls(&api, repo, &unique)?;
+    Ok(json!({
+        "repo": repo, "fetched_at": Utc::now().to_rfc3339(),
+        "scope": format!("PRs merged since {}", start.to_rfc3339()),
+        "releases": [{"tag": label, "published_at": Value::Null, "url": Value::Null,
+            "prs": pulls.values().collect::<Vec<_>>()}],
+    }))
+}
+
+/// Scan every release page, then select the newest publication dates.
+pub fn collect(repo: &str, count: usize, pattern: &str, tag: Option<&str>) -> Result<Value> {
+    check_repo(repo)?;
+    if count == 0 {
+        bail!("limit must be a positive integer");
+    }
+    let api = api()?;
     let mut releases = if let Some(tag) = tag {
         let encoded = url::form_urlencoded::byte_serialize(tag.as_bytes())
             .collect::<String>()
@@ -332,30 +432,13 @@ pub fn collect(repo: &str, count: usize, pattern: &str, tag: Option<&str>) -> Re
         .collect::<BTreeSet<_>>()
         .into_iter()
         .collect();
-    let graphql = if api.token.is_some() {
-        match graphql_pulls(&api, repo, &unique) {
-            Ok(pulls) => Some(pulls),
-            Err(error) if error.downcast_ref::<Unmerged>().is_some() => return Err(error),
-            Err(_) => None,
-        }
-    } else {
-        None
-    };
-    let pulls = match graphql {
-        Some(pulls) => pulls,
-        None => parallel(&unique, |number| {
-            let item = api.get(&format!("/repos/{repo}/pulls/{number}"), None)?.0;
-            Ok((*number, pull(&item, repo, *number, false)?))
-        })?
-        .into_iter()
-        .collect(),
-    };
+    let pulls = fetch_pulls(&api, repo, &unique)?;
     let releases: Vec<_> = releases.iter().zip(membership).map(|(release, ids)| json!({
         "tag": release["tag_name"], "published_at": release["published_at"], "url": release["html_url"],
         "prs": ids.iter().map(|number| &pulls[number]).collect::<Vec<_>>()
     })).collect();
     Ok(json!({
-        "repo": repo, "fetched_at": chrono::Utc::now().to_rfc3339(),
+        "repo": repo, "fetched_at": Utc::now().to_rfc3339(),
         "scope": "merged PRs explicitly linked in each release's notes; deduplicated per release",
         "releases": releases,
     }))

@@ -6,6 +6,9 @@ on:
         type: choice
         options: [author, merger, changes]
         default: author
+      since:
+        description: Window like 7d; empty renders the last five nightlies
+        default: ''
       format:
         type: choice
         options: [mp4, gif, both]
@@ -23,6 +26,7 @@ jobs:
           repository: pingdotgg/t3code
           releases: '5'
           match: nightly
+          since: ${{ inputs.since }}
           metric: ${{ inputs.metric }}
           format: ${{ inputs.format }}
       - uses: actions/upload-artifact@v4
