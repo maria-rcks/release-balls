@@ -1,13 +1,4 @@
-.venv/
-__pycache__/
-*.egg-info/
 .cache/
 out/
-demo/**/*.mp4
-demo/**/*.gif
-demo/**/*.png
-demo/merger/
-demo/nightlies/
-demo/manifest.json
-
+release-balls-output/
 /target/

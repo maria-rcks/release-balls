@@ -3,7 +3,7 @@
 `Aileron-Regular.ttf` is Pillow 12.3.0's embedded, limited-character-set
 Aileron Regular font, extracted without further modification from
 [`PIL.ImageFont.load_default()`](https://github.com/python-pillow/Pillow/blob/12.3.0/src/PIL/ImageFont.py#L1089).
-It keeps the Rust renderer's font consistent with the original Python renderer.
+It keeps text identical to the original prototype renderer.
 
 Aileron is by **Sora Sagano** (dotcolon). The author's
 [Aileron page](https://dotcolon.net/fonts/aileron) identifies its license as
