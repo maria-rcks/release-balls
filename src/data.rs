@@ -315,15 +315,18 @@ pub fn collect_merged(repo: &str, since: &str) -> Result<Value> {
     check_repo(repo)?;
     let (start, label) = window(since)?;
     let api = api()?;
+    // Fix both ends so PRs merged mid-fetch cannot shift result pages.
+    let stamp = "%Y-%m-%dT%H:%M:%SZ";
     let query = format!(
-        "repo:{repo} is:pr is:merged merged:>={}",
-        start.format("%Y-%m-%dT%H:%M:%SZ")
+        "repo:{repo} is:pr is:merged merged:{}..{}",
+        start.format(stamp),
+        Utc::now().format(stamp)
     );
     let encoded = url::form_urlencoded::byte_serialize(query.as_bytes()).collect::<String>();
     let mut unique = BTreeSet::new();
     for page in 1.. {
         let (result, _) = api.get(
-            &format!("/search/issues?q={encoded}&per_page=100&page={page}"),
+            &format!("/search/issues?q={encoded}&sort=created&order=asc&per_page=100&page={page}"),
             None,
         )?;
         let total = result["total_count"].as_u64().unwrap_or(0);
