@@ -65,6 +65,9 @@ struct Args {
 #[derive(Deserialize)]
 struct Snapshot {
     repo: String,
+    /// Set by --since; its single pseudo-release tag is already a title phrase.
+    #[serde(default)]
+    window: bool,
     releases: Vec<Release>,
 }
 #[derive(Deserialize)]
@@ -188,7 +191,7 @@ fn main() -> Result<()> {
     let mut markdown = Vec::new();
     for releases in groups {
         // Window labels carry their own preposition ("in the last 7 days", "since ...").
-        let subtitle = if args.since.is_some() {
+        let subtitle = if snapshot.window {
             releases[0].tag.clone()
         } else if releases.len() == 1 {
             format!("in {}", releases[0].tag)

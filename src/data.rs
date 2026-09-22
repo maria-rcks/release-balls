@@ -329,6 +329,9 @@ pub fn collect_merged(repo: &str, since: &str) -> Result<Value> {
             &format!("/search/issues?q={encoded}&sort=created&order=asc&per_page=100&page={page}"),
             None,
         )?;
+        if result["incomplete_results"] == true {
+            bail!("GitHub search timed out with partial results; retry later");
+        }
         let total = result["total_count"].as_u64().unwrap_or(0);
         if total > 1000 {
             bail!("{total} PRs merged in {label}; GitHub search returns at most 1000, so use a shorter window");
@@ -348,7 +351,7 @@ pub fn collect_merged(repo: &str, since: &str) -> Result<Value> {
     let unique: Vec<_> = unique.into_iter().collect();
     let pulls = fetch_pulls(&api, repo, &unique)?;
     Ok(json!({
-        "repo": repo, "fetched_at": Utc::now().to_rfc3339(),
+        "repo": repo, "fetched_at": Utc::now().to_rfc3339(), "window": true,
         "scope": format!("PRs merged since {}", start.to_rfc3339()),
         "releases": [{"tag": label, "published_at": Value::Null, "url": Value::Null,
             "prs": pulls.values().collect::<Vec<_>>()}],
