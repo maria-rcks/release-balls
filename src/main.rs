@@ -187,10 +187,13 @@ fn main() -> Result<()> {
     let mut artifacts = Vec::new();
     let mut markdown = Vec::new();
     for releases in groups {
-        let subtitle = if releases.len() == 1 {
+        // Window labels carry their own preposition ("in the last 7 days", "since ...").
+        let subtitle = if args.since.is_some() {
             releases[0].tag.clone()
+        } else if releases.len() == 1 {
+            format!("in {}", releases[0].tag)
         } else {
-            format!("the last {} releases", releases.len())
+            format!("in the last {} releases", releases.len())
         };
         let stem = if args.per_release {
             releases[0]

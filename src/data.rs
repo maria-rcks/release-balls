@@ -291,7 +291,7 @@ fn window(since: &str) -> Result<(DateTime<Utc>, String)> {
         if start > now {
             bail!("--since date is in the future");
         }
-        return Ok((start, format!("{date} to {}", now.date_naive())));
+        return Ok((start, format!("since {}", date.format("%b %-d, %Y"))));
     }
     let captures = Regex::new(r"^([1-9][0-9]{0,3})([hdw])$")?
         .captures(since)
@@ -303,9 +303,9 @@ fn window(since: &str) -> Result<(DateTime<Utc>, String)> {
         _ => ("week", TimeDelta::weeks(amount)),
     };
     let label = if amount == 1 {
-        format!("the last {unit}")
+        format!("in the last {unit}")
     } else {
-        format!("the last {amount} {unit}s")
+        format!("in the last {amount} {unit}s")
     };
     Ok((now - delta, label))
 }
