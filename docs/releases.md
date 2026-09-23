@@ -1,6 +1,6 @@
 # Add the animation to a release
 
-Copy [examples/release.yml](../examples/release.yml) to `.github/workflows/release-balls.yml` in your repository. See [private action access](#private-action-access) first.
+Copy [examples/release.yml](../examples/release.yml) to `.github/workflows/release-balls.yml` in your repository.
 
 Publish a release with GitHub-generated notes or full merged PR links. The example URL-encodes the tag for asset links, including tags containing `/` or `#`. The workflow:
 
@@ -27,12 +27,8 @@ If another workflow creates your release using its default `GITHUB_TOKEN`, GitHu
 
 Assets in private repositories require authentication. The download links work for authorized users, but GitHub's image proxy may not display private release-asset GIFs inline. For a reliably visible embed, host only the intended GIF at a publicly readable URL and use that URL in your notes. Never make the repository public just to embed a GIF.
 
+For private source PRs, add `pull-requests: read` to the workflow permissions. To read a different private source repository, set `token: ${{ secrets.SOURCE_READ_TOKEN }}` to a token with access to that repository's releases and pull requests.
+
 ## Pass files to another job
 
 Upload `${{ steps.balls.outputs.directory }}` with `actions/upload-artifact@v4`, then download that artifact in the next job with `actions/download-artifact@v4`. Action outputs are paths on the current runner, so passing a path alone to a different job will not transfer the files. After downloading, open `manifest.json`, `data.json`, and `embed.md` relative to the download directory. The file paths inside the manifest refer to the original render job.
-
-## Private action access
-
-This action is shared with other private `maria-rcks` repositories. For another account, copy it into your own private repository, enable **Settings → Actions → General → Access**, and change the workflow's `uses:` reference. Passing a token to the action does not grant access to the action itself.
-
-For private source PRs, add `pull-requests: read` to the workflow permissions. To read a different private source repository, set `token: ${{ secrets.SOURCE_READ_TOKEN }}` to a token with access to that repository's releases and pull requests.

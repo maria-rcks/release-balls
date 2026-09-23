@@ -16,7 +16,7 @@ Copy [examples/release.yml](examples/release.yml) to `.github/workflows/release-
 
 Rerunning it replaces the same assets and the same notes section.
 
-The action is private for now. Before using it from another repository, see [private action access](docs/releases.md#private-action-access).
+The first run on a new version builds the Rust binary, which takes about 3 minutes. Later runs reuse the cached binary.
 
 ## Render without publishing
 
@@ -100,7 +100,7 @@ export GH_TOKEN=...  # can read the source repository
 
 Files go to `out/`. The CLI defaults differ from the action: 5 releases matching `nightly`. Useful flags: `--since 7d`, `--tag`, `--per-release`, `--top N`, `--include-bots`, `--data data.json` to re-render a saved snapshot without calling the GitHub API. Run `--help` for the rest.
 
-Rendering the example MP4 takes about 0.7 seconds on a 4-vCPU runner, excluding GitHub requests and the build. The action caches the compiled binary, so only the first run on a new ref pays for a Rust build.
+Rendering the example MP4 takes about 0.7 seconds on a 4-vCPU runner, excluding GitHub requests and the build.
 
 ## More
 
