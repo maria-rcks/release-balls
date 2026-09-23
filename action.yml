@@ -1,5 +1,8 @@
-name: release balls
-description: Render release contributor videos and GIFs with Rust and FFmpeg
+name: Release Balls
+description: Race the contributors behind a release or time window as a GIF and MP4
+branding:
+  icon: award
+  color: purple
 inputs:
   repository:
     description: GitHub owner/repository to read
