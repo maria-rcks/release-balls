@@ -4,9 +4,9 @@
 
 A GitHub Action that turns a release into a short race between the people who shipped it. Each contributor is a ball with their avatar; the more merged PRs they have, the faster they go. You get a GIF, an MP4, and the rankings as JSON.
 
-![PR authors across five t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/3168ea46-9f0c-4393-b669-2ea04c278f5e/summary-author.gif)
+![Top 10 t3code PR authors in the past week](https://uploads-production-47e4.up.railway.app/files/2e714b1b-5b8f-4d5c-be79-aebd1610e069/summary-author.gif)
 
-*PR authors across five [t3code nightly releases](https://github.com/pingdotgg/t3code/releases), rendered with `releases: 5` and `match: nightly`.*
+*Top 10 [t3code](https://github.com/pingdotgg/t3code) PR authors in the past week, rendered with `since: 7d`.*
 
 ## Quick start
 
