@@ -1,10 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
   <title>Release Balls</title>
   <rect x="2" y="2" width="252" height="252" rx="58" fill="#fff" stroke="#e8e6f0" stroke-width="4"/>
-  <circle cx="98" cy="160" r="40" fill="#7c5cff"/>
-  <circle cx="168" cy="178" r="26" fill="#ff6b9a"/>
-  <circle cx="160" cy="104" r="22" fill="#ffd23f"/>
-  <circle cx="92" cy="80" r="16" fill="#2ec4b6"/>
-  <circle cx="190" cy="60" r="11" fill="#ff8c42"/>
-  <circle cx="126" cy="46" r="8" fill="#4da3ff"/>
+  <circle cx="151" cy="64" r="15" fill="#ff8c42" opacity="0.15"/>
+  <circle cx="174" cy="64" r="15" fill="#ff8c42" opacity="0.35"/>
+  <circle cx="196" cy="64" r="15" fill="#ff8c42"/>
+  <circle cx="111" cy="108" r="17" fill="#4da3ff" opacity="0.15"/>
+  <circle cx="86" cy="108" r="17" fill="#4da3ff" opacity="0.35"/>
+  <circle cx="60" cy="108" r="17" fill="#4da3ff"/>
+  <circle cx="135" cy="154" r="19" fill="#2ec4b6" opacity="0.15"/>
+  <circle cx="164" cy="154" r="19" fill="#2ec4b6" opacity="0.35"/>
+  <circle cx="192" cy="154" r="19" fill="#2ec4b6"/>
+  <circle cx="131" cy="202" r="23" fill="#7c5cff" opacity="0.15"/>
+  <circle cx="96" cy="202" r="23" fill="#7c5cff" opacity="0.35"/>
+  <circle cx="62" cy="202" r="23" fill="#7c5cff"/>
 </svg>
