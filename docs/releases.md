@@ -9,7 +9,7 @@ Publish a release with GitHub-generated notes or full merged PR links. The examp
 3. Adds the linked GIF and video download to the existing notes.
 4. Saves the source data and rankings as an Actions artifact.
 
-Every matching contributor stays visible in every frame. Names, counts, and balls scale uniformly into additional columns as the list grows. The default clip remains 16 seconds at any contributor count. Very large lists have tiny labels, especially in the 480px GIF; use a higher-resolution MP4 when individual names matter. The CLI only limits contributors when you pass `--top N`; bots are excluded unless you pass `--include-bots`.
+The top 10 contributors are shown by default. Set `top: 0` (or `--top 0` in the CLI) to show everyone; large lists then split into columns with smaller labels, especially in the 480px GIF, so use the MP4 when individual names matter. Clips stay 16 seconds at any contributor count. Bots are excluded unless you pass `--include-bots` to the CLI.
 
 GitHub scopes caches by ref. A new release tag may need a cold build unless a run on the default branch has already cached the same action binary. Reruns on the same tag can reuse its cache.
 

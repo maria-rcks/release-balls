@@ -1,4 +1,4 @@
-# bundled font
+# Bundled font
 
 `Aileron-Regular.ttf` is Pillow 12.3.0's embedded, limited-character-set
 Aileron Regular font, extracted without further modification from
