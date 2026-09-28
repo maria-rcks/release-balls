@@ -297,17 +297,25 @@ fn window(since: &str) -> Result<(DateTime<Utc>, String)> {
         .captures(since)
         .context("--since must look like 24h, 7d, 2w, or 2026-09-01")?;
     let amount: i64 = captures[1].parse()?;
-    let (unit, delta) = match &captures[2] {
-        "h" => ("hour", TimeDelta::hours(amount)),
-        "d" => ("day", TimeDelta::days(amount)),
-        _ => ("week", TimeDelta::weeks(amount)),
+    let hours = match &captures[2] {
+        "h" => amount,
+        "d" => amount * 24,
+        _ => amount * 24 * 7,
+    };
+    // Name the window in the largest whole unit, so 7d reads "the past week".
+    let (amount, unit) = if hours % (24 * 7) == 0 {
+        (hours / (24 * 7), "week")
+    } else if hours % 24 == 0 {
+        (hours / 24, "day")
+    } else {
+        (hours, "hour")
     };
     let label = if amount == 1 {
-        format!("in the last {unit}")
+        format!("in the past {unit}")
     } else {
-        format!("in the last {amount} {unit}s")
+        format!("in the past {amount} {unit}s")
     };
-    Ok((now - delta, label))
+    Ok((now - TimeDelta::hours(hours), label))
 }
 
 /// Collect every PR merged since a point in time, as one pseudo-release.

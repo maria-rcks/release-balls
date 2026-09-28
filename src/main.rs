@@ -34,9 +34,9 @@ struct Args {
     users: String,
     #[arg(long)]
     include_bots: bool,
-    /// Optional contributor limit. By default, include every matching contributor.
-    #[arg(long, value_parser = clap::value_parser!(u32).range(1..))]
-    top: Option<u32>,
+    /// Show the top N contributors; 0 shows everyone.
+    #[arg(long, default_value_t = 10)]
+    top: u32,
     #[arg(long, default_value = "mp4", value_parser = ["mp4", "gif", "both"])]
     format: String,
     #[arg(long)]
@@ -131,8 +131,8 @@ fn ranking(releases: &[Release], args: &Args) -> Result<Vec<(String, u64)>> {
             .then_with(|| a.0.to_lowercase().cmp(&b.0.to_lowercase()))
             .then_with(|| a.0.cmp(&b.0))
     });
-    if let Some(top) = args.top {
-        rows.truncate(top as usize);
+    if args.top > 0 {
+        rows.truncate(args.top as usize);
     }
     Ok(rows)
 }
@@ -190,7 +190,7 @@ fn main() -> Result<()> {
     let mut artifacts = Vec::new();
     let mut markdown = Vec::new();
     for releases in groups {
-        // Window labels carry their own preposition ("in the last 7 days", "since ...").
+        // Window labels carry their own preposition ("in the past week", "since ...").
         let subtitle = if snapshot.window {
             releases[0].tag.clone()
         } else if releases.len() == 1 {
