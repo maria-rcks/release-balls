@@ -1,3 +1,5 @@
+<img src="assets/logo.svg" alt="" width="96" align="right">
+
 # Release Balls
 
 A GitHub Action that turns a release into a short race between the people who shipped it. Each contributor is a ball with their avatar; the more merged PRs they have, the faster they go. You get a GIF, an MP4, and the rankings as JSON.

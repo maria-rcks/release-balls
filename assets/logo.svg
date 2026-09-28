@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Release Balls</title>
+  <rect x="2" y="2" width="252" height="252" rx="58" fill="#fff" stroke="#e8e6f0" stroke-width="4"/>
+  <circle cx="96" cy="128" r="74" fill="#7c5cff" opacity=".1"/>
+  <circle cx="122" cy="128" r="74" fill="#7c5cff" opacity=".2"/>
+  <circle cx="150" cy="128" r="74" fill="#7c5cff"/>
+  <path d="M130 94V162M130 102Q130 132 176 132" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round"/>
+  <g fill="#fff">
+    <circle cx="130" cy="94" r="11"/>
+    <circle cx="130" cy="162" r="11"/>
+    <circle cx="176" cy="132" r="11"/>
+  </g>
+</svg>
