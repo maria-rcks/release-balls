@@ -28,6 +28,9 @@ inputs:
   users:
     description: Optional comma-separated GitHub logins
     default: ''
+  top:
+    description: Show the top N contributors; 0 shows everyone
+    default: '10'
   format:
     description: mp4, gif, or both
     default: mp4
@@ -91,6 +94,7 @@ runs:
         RB_SINCE: ${{ inputs.since }}
         RB_METRIC: ${{ inputs.metric }}
         RB_USERS: ${{ inputs.users }}
+        RB_TOP: ${{ inputs.top }}
         RB_FORMAT: ${{ inputs.format }}
         RB_ASSET_BASE: ${{ inputs.asset-base-url }}
         RB_OUTPUT: ${{ inputs.output }}
@@ -103,4 +107,4 @@ runs:
         fi
         "$GITHUB_ACTION_PATH/target/release/release-balls" "${tag_args[@]}" \
           --repo "$RB_REPOSITORY" --releases "$RB_RELEASES" --match "$RB_MATCH" \
-          --metric "$RB_METRIC" --users "$RB_USERS" --format "$RB_FORMAT" --out "$RB_OUTPUT" --asset-base-url "$RB_ASSET_BASE"
+          --metric "$RB_METRIC" --users "$RB_USERS" --top "$RB_TOP" --format "$RB_FORMAT" --out "$RB_OUTPUT" --asset-base-url "$RB_ASSET_BASE"

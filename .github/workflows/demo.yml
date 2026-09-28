@@ -8,7 +8,7 @@ on:
         default: author
       since:
         description: Window like 7d; empty renders the last five nightlies
-        default: ''
+        default: 7d
       format:
         type: choice
         options: [mp4, gif, both]

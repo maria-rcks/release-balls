@@ -4,9 +4,9 @@
 
 A GitHub Action that turns a release into a short race between the people who shipped it. Each contributor is a ball with their avatar; the more merged PRs they have, the faster they go. You get a GIF, an MP4, and the rankings as JSON.
 
-![PR authors across five t3code nightly releases](https://uploads-production-47e4.up.railway.app/files/3168ea46-9f0c-4393-b669-2ea04c278f5e/summary-author.gif)
+![Top 10 t3code PR authors in the past week](https://uploads-production-47e4.up.railway.app/files/2e714b1b-5b8f-4d5c-be79-aebd1610e069/summary-author.gif)
 
-*PR authors across five [t3code nightly releases](https://github.com/pingdotgg/t3code/releases), rendered with `releases: 5` and `match: nightly`.*
+*Top 10 [t3code](https://github.com/pingdotgg/t3code) PR authors in the past week, rendered with `since: 7d`.*
 
 ## Quick start
 
@@ -42,7 +42,7 @@ To get the files as a workflow artifact instead, render any repository's release
 
 ## Rank a time window
 
-Set `since` to rank every PR merged in a window, with or without releases: `24h`, `7d`, `2w`, or a UTC date like `2026-09-01`. The title reads "Pull requests merged in the last 7 days". [examples/weekly.yml](examples/weekly.yml) renders last week's PRs every Monday.
+Set `since` to rank every PR merged in a window, with or without releases: `24h`, `7d`, `2w`, or a UTC date like `2026-09-01`. The title reads "Pull requests merged in the past week". [examples/weekly.yml](examples/weekly.yml) renders last week's PRs every Monday.
 
 ```yaml
 - uses: maria-rcks/release-balls@v1
@@ -63,6 +63,7 @@ Windows come from GitHub search, which returns at most 1,000 PRs; use a shorter 
 | `releases` | `1` | How many of the latest published releases to combine when `tag` is empty. |
 | `match` | `''` | Substring a tag must contain, such as `nightly`. Empty matches every tag. |
 | `users` | everyone except bots | Comma-separated logins to include. |
+| `top` | `10` | Show the top N contributors. `0` shows everyone. |
 | `repository` | current repository | `owner/repo` to read releases from. |
 | `token` | `github.token` | Token that can read the source repository's releases and PRs. |
 | `asset-base-url` | unset | URL where the media will be hosted, used to build links in `embed.md`. |
@@ -87,7 +88,7 @@ To use the files in another job, upload `directory` as an artifact. See [passing
 - A PR linked from several selected releases counts once.
 - Drafts are skipped. Published prereleases are included.
 - Bots are excluded. Ties sort alphabetically.
-- Every contributor who qualifies is shown at once. Rows and columns shrink to fit, so labels get small with very large lists.
+- The top 10 contributors are shown. With `top: 0`, everyone is shown and large lists split into columns with smaller labels.
 - The fastest ball crosses in one second, so speeds are relative within a clip. Clips last 16 seconds. MP4 is 1080px at 60fps, GIF is 480px at 15fps.
 
 ## Run it locally
@@ -100,7 +101,7 @@ export GH_TOKEN=...  # can read the source repository
 ./target/release/release-balls --repo pingdotgg/t3code --releases 5 --match nightly --metric merger --format both
 ```
 
-Files go to `out/`. The CLI defaults differ from the action: 5 releases matching `nightly`. Useful flags: `--since 7d`, `--tag`, `--per-release`, `--top N`, `--include-bots`, `--data data.json` to re-render a saved snapshot without calling the GitHub API. Run `--help` for the rest.
+Files go to `out/`. The CLI defaults differ from the action: 5 releases matching `nightly`. Useful flags: `--since 7d`, `--tag`, `--per-release`, `--top N` (default 10, `0` for everyone), `--include-bots`, `--data data.json` to re-render a saved snapshot without calling the GitHub API. Run `--help` for the rest.
 
 Rendering the example MP4 takes about 0.7 seconds on a 4-vCPU runner, excluding GitHub requests and the build.
 
