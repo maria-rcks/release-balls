@@ -1,24 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
   <title>Release Balls</title>
   <rect width="256" height="256" rx="60" fill="#7c5cff"/>
-  <circle cx="124" cy="46" r="15" fill="#ffd23f"/>
-  <circle cx="74" cy="72" r="17" fill="#4da3ff"/>
-  <circle cx="178" cy="78" r="19" fill="#2ec4b6"/>
-  <circle cx="104" cy="104" r="23" fill="#ff6b9a"/>
-  <circle cx="152" cy="118" r="21" fill="#ff8c42"/>
-  <g fill="#fff" opacity=".45">
-    <circle cx="119" cy="41" r="4.5"/>
-    <circle cx="68" cy="66" r="5"/>
-    <circle cx="171" cy="71" r="5.5"/>
-    <circle cx="96" cy="96" r="6.5"/>
-    <circle cx="145" cy="111" r="6"/>
-  </g>
-  <path d="M60 144h136l-8 66a24 24 0 0 1-24 22H92a24 24 0 0 1-24-22z" fill="#fff"/>
-  <rect x="48" y="130" width="160" height="26" rx="13" fill="#fff"/>
-  <rect x="62" y="156" width="132" height="6" rx="3" fill="#e6e0ff"/>
-  <circle cx="108" cy="186" r="6" fill="#2b2250"/>
-  <circle cx="148" cy="186" r="6" fill="#2b2250"/>
-  <circle cx="96" cy="200" r="7" fill="#ffb3cb"/>
-  <circle cx="160" cy="200" r="7" fill="#ffb3cb"/>
-  <path d="M120 199q8 8 16 0" fill="none" stroke="#2b2250" stroke-width="5" stroke-linecap="round"/>
+  <path d="M128 112l58 32-58 32-58-32z" fill="#4a34b5"/>
+  <circle cx="128" cy="156" r="22" fill="#ff6b9a"/>
+  <circle cx="96" cy="94" r="17" fill="#4da3ff"/>
+  <circle cx="162" cy="86" r="15" fill="#ffd23f"/>
+  <circle cx="126" cy="54" r="12" fill="#2ec4b6"/>
+  <circle cx="178" cy="40" r="9" fill="#ff8c42"/>
+  <circle cx="80" cy="46" r="7" fill="#ff6b9a"/>
+  <path d="M70 144l58 32v62l-58-32z" fill="#fff"/>
+  <path d="M186 144l-58 32v62l58-32z" fill="#e3dcff"/>
 </svg>
